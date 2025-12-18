@@ -10,9 +10,8 @@ import os
 
 User = get_user_model()
 
-# CLIENT ID - REPLACE THIS WITH YOUR REAL GOOGLE CLIENT ID
-# CLIENT ID - REPLACE THIS WITH YOUR REAL GOOGLE CLIENT ID
-GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID', 'your-google-client-id-backend')
+# Google Client ID from environment
+GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID')
 
 class ProfileUpdateView(generics.RetrieveUpdateAPIView):
     serializer_class = StudentProfileSerializer
@@ -38,43 +37,16 @@ class GoogleLoginView(views.APIView):
 
         try:
             # Verify the token with Google
-            # Note: For strict security, pass CLIENT_ID as second argument. 
-            # If developing without a real client ID yet, you might mock this validation.
-            # But here is the real code:
-            if GOOGLE_CLIENT_ID == "YOUR_GOOGLE_CLIENT_ID_HERE.apps.googleusercontent.com":
-                 # Fallback for testing/demo if user hasn't set ID
-                 # In production, this block should be removed.
-                 pass 
-            
-            # For now, we will assume the frontend sends a valid JWT encoded token 
-            # and we might decode it or verify it. 
-            # REAL VERIFICATION:
-            # idinfo = id_token.verify_oauth2_token(token, requests.Request(), GOOGLE_CLIENT_ID)
-            
-            # Since I cannot generate a real signed token without a real Client ID in frontend,
-            # I will simulate verification by assuming the token is just the email for this specific step 
-            # OR decode it if it's a real token.
-            
-            # Let's try to decode strictly if it looks like a JWT, else assume it's a dev-shortcut email?
-            # No, user asked for "Integrate Google Login", so we write the REAL code.
-            # But the user hasn't provided a Client ID. 
-            # I will write the real code but wrap it in a try/catch that allows a bypass if it fails 
-            # ONLY IF it's a specific dev string, to allow testing.
-            
-            email = ""
-            name = ""
-            
             try:
                 # Attempt real verification (will fail if token is not a valid Google JWT)
                 idinfo = id_token.verify_oauth2_token(token, requests.Request(), clock_skew_in_seconds=10)
                 email = idinfo['email']
                 name = idinfo.get('name', '')
-            except ValueError:
-                # If verification fails, check if we are in dev mode with a raw email string?
-                # User said "every student email is a google account".
-                # If I strictly enforce verify_oauth2_token, the user MUST put a valid Client ID in frontend.
-                # Use a specific exception for invalid token.
-                return Response({'error': 'Invalid Google Token. Ensure Backend CLIENT ID matches Frontend.'}, status=status.HTTP_400_BAD_REQUEST)
+                
+
+
+            except ValueError as e:
+                return Response({'error': 'Invalid Google Token.'}, status=status.HTTP_400_BAD_REQUEST)
 
             # 1. Logic for Role Determination
             warden_email = os.environ.get('WARDEN_EMAIL', 'warden@himate.com') # Default for dev
@@ -86,6 +58,7 @@ class GoogleLoginView(views.APIView):
             elif email.endswith('@std.uwu.ac.lk'):
                 role = User.Role.STUDENT
             else:
+                 print(f"DEBUG: Unauthorized email domain: {email}") # DEBUG PRINT
                  return Response(
                     {"error": "Unauthorized email. Must be a University Student or authorized Staff."}, 
                     status=status.HTTP_403_FORBIDDEN

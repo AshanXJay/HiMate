@@ -10,9 +10,7 @@ import RoomGrid from './components/RoomGrid';
 import AllocationControl from './components/AllocationControl';
 import { AuthProvider, AuthContext } from './AuthContext';
 
-// REPLACE WITH YOUR REAL CLIENT ID
-// REPLACE WITH YOUR REAL CLIENT ID
-const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || "your-google-client-id-here";
+const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID;
 
 const Home = () => {
   const { user, loading } = React.useContext(AuthContext);
