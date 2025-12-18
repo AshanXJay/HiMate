@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
+import { AuthContext } from '../AuthContext';
 
 const Navbar = () => {
+    const { user, logout } = useContext(AuthContext);
     return (
         <nav className="navbar">
             <div className="brand">
@@ -11,8 +13,13 @@ const Navbar = () => {
             <div className="nav-links">
                 <Link to="/" className="nav-link">Home</Link>
                 <Link to="/rooms" className="nav-link">Rooms</Link>
-                {/* Auth Links (Placeholder for dynamic check) */}
-                <Link to="/login" className="nav-link">Login</Link>
+                {user ? (
+                    <button onClick={logout} className="nav-link" style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
+                        Logout
+                    </button>
+                ) : (
+                    <Link to="/login" className="nav-link">Login</Link>
+                )}
             </div>
         </nav>
     );

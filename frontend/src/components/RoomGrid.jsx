@@ -6,7 +6,14 @@ const RoomGrid = () => {
 
     useEffect(() => {
         // Hardcoded Hostel ID 1 for simplicity
-        axios.get('http://127.0.0.1:8000/api/housing/hostels/1/rooms/').then(res => setRooms(res.data));
+        const token = localStorage.getItem('access_token');
+        if (token) {
+            axios.get('http://127.0.0.1:8000/api/housing/hostels/1/rooms/', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+                .then(res => setRooms(res.data))
+                .catch(err => console.error("Error fetching rooms", err));
+        }
     }, []);
 
     return (

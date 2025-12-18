@@ -7,10 +7,14 @@ const AllocationControl = () => {
     const runAlgo = async () => {
         setMsg('Running...');
         try {
-            const res = await axios.post('http://127.0.0.1:8000/api/allocation/run/');
+            const token = localStorage.getItem('access_token');
+            const res = await axios.post('http://127.0.0.1:8000/api/allocation/run/', {}, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
             setMsg(res.data.message);
         } catch (err) {
-            setMsg('Error running allocation');
+            console.error(err);
+            setMsg('Error running allocation: ' + (err.response?.status === 401 ? 'Unauthorized' : 'Failed'));
         }
     };
 

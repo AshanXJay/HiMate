@@ -16,12 +16,26 @@ const SurveyWizard = () => {
         e.preventDefault();
         try {
             const token = localStorage.getItem('access_token');
+            console.log("DEBUG: Survey Token:", token); // DEBUG
+            if (!token) {
+                alert("No access token found! Please login again.");
+                navigate('/login');
+                return;
+            }
             await axios.patch('http://127.0.0.1:8000/api/profile/update/', formData, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             navigate('/dashboard');
         } catch (error) {
-            alert('Error updating profile');
+            console.error("DEBUG: Survey Update Error:", error.response);
+            if (error.response && error.response.status === 401) {
+                alert("Session expired. Please login again.");
+                localStorage.removeItem('access_token');
+                localStorage.removeItem('user');
+                navigate('/login');
+            } else {
+                alert('Error updating profile: ' + (error.response?.data?.detail || error.message));
+            }
         }
     };
 

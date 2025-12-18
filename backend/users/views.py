@@ -70,6 +70,9 @@ class GoogleLoginView(views.APIView):
                 # Ensure role matches (in case a student became a warden or vice versa - unlikely but safe)
                 if user.role != role:
                     user.role = role
+                    if role == User.Role.WARDEN:
+                        user.is_staff = True
+                        user.is_superuser = True # Optional: Give full power
                     user.save()
             except User.DoesNotExist:
                 username = email.split('@')[0]
@@ -79,6 +82,9 @@ class GoogleLoginView(views.APIView):
                     password='google_auth_placeholder_password'
                 )
                 user.role = role
+                if role == User.Role.WARDEN:
+                    user.is_staff = True
+                    user.is_superuser = True
                 user.save()
                 
                 # Create profile if student

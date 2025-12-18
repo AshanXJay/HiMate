@@ -5,7 +5,7 @@ import { AuthContext } from '../AuthContext';
 
 const Dashboard = () => {
     const [allocation, setAllocation] = useState(null);
-    const { user } = useContext(AuthContext);
+    const { user, logout } = useContext(AuthContext);
 
     useEffect(() => {
         const fetchAllocation = async () => {
@@ -31,6 +31,7 @@ const Dashboard = () => {
                     <h1>Hello, {user.username}</h1>
                     <p className="text-warning font-bold">{user.enrollment_number}</p>
                 </div>
+                <button onClick={logout} className="btn btn-danger">Logout</button>
             </header>
 
             <div className="grid grid-cols-2 gap-4">

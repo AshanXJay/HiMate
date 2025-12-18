@@ -6,7 +6,14 @@ const WardenDashboard = () => {
     const [stats, setStats] = useState({});
 
     useEffect(() => {
-        axios.get('http://127.0.0.1:8000/api/operations/stats/').then(res => setStats(res.data));
+        const token = localStorage.getItem('access_token');
+        if (token) {
+            axios.get('http://127.0.0.1:8000/api/operations/dashboard/stats/', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+                .then(res => setStats(res.data))
+                .catch(err => console.error("Error fetching stats:", err));
+        }
     }, []);
 
     return (
