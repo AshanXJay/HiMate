@@ -12,34 +12,58 @@ HiMate is a full-stack web application designed for **Uva Wellassa University** 
 *   **Dark Mode UI**: Premium AMOLED Black & Orange aesthetic.
 
 ## 🛠️ Tech Stack
-*   **Frontend**: React (CRA), TailwindCSS, Axios
+*   **Frontend**: React (Create React App), Vanilla CSS
 *   **Backend**: Django Rest Framework (DRF)
-*   **Database**: SQLite (Dev) / PostgreSQL (Prod ready)
+*   **Database**: MySQL
 *   **Auth**: Google OAuth 2.0 + JWT
 
 ## 📦 Installation & Setup
 
-### 1. Backend (Django)
+### Prerequisites
+*   Python 3.10+
+*   Node.js & npm
+*   MySQL Server (installed & running)
+
+### 1. Database Setup
+Log in to your MySQL server and create the database:
+```sql
+CREATE DATABASE himate_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```
+
+### 2. Backend (Django)
 ```bash
 cd backend
 python -m venv venv
-source venv/bin/activate  # or venv\Scripts\activate on Windows
+venv\Scripts\activate  # Windows
+# source venv/bin/activate  # Mac/Linux
+
 pip install -r requirements.txt
 
-# Initial Setup
+# Configure Environment
+cp .env.example .env
+# Edit .env with your MySQL credentials, Google Client ID, and Warden Email
+
+# Run Migrations
 python manage.py migrate
-python manage.py seed_hostels  # Generates dummy rooms
+
+# Create Superuser
+python manage.py createsuperuser
+
+# Start Server
 python manage.py runserver
 ```
-*Note: Create a `.env` file in `/backend` with `SECRET_KEY` and `GOOGLE_CLIENT_ID`.*
 
-### 2. Frontend (React)
+### 3. Frontend (React)
 ```bash
 cd frontend
 npm install
+
+# Configure Environment
+cp .env.example .env
+# Edit .env and paste your Google Client ID (Must match backend)
+
 npm start
 ```
-*Note: Create a `.env` file in `/frontend` with `REACT_APP_GOOGLE_CLIENT_ID`.*
 
 ## 📖 Documentation
 Detailed structure guides are available in the `docs/` folder:

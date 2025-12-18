@@ -58,7 +58,6 @@ class GoogleLoginView(views.APIView):
             elif email.endswith('@std.uwu.ac.lk'):
                 role = User.Role.STUDENT
             else:
-                 print(f"DEBUG: Unauthorized email domain: {email}") # DEBUG PRINT
                  return Response(
                     {"error": "Unauthorized email. Must be a University Student or authorized Staff."}, 
                     status=status.HTTP_403_FORBIDDEN
