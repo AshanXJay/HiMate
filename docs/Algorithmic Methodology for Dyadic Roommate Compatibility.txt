@@ -1,0 +1,78 @@
+Technical Specification: Algorithmic Methodology for Dyadic Roommate Compatibility
+Project Name: HiMate (Hostel Admission & Allocation System)
+Module: Algorithmic Allocation Engine
+Version: 1.0
+1. Executive Summary
+The core value proposition of the HiMate system is the mitigation of student conflict through scientifically grounded roommate allocation. Unlike traditional systems that rely on random assignment or superficial preferences, HiMate utilizes a Multi-Tiered Constraint Satisfaction Algorithm.
+This methodology is derived from three primary fields of study:
+1.	Chronobiology: The impact of circadian rhythms on sleep hygiene and academic performance.
+2.	Personality Psychology: The "Big Five" Model (OCEAN) regarding conscientiousness and orderliness.
+3.	Interpersonal Theory: Complementarity and dominance in shared living spaces.
+2. The Matching Logic Hierarchy
+The algorithm operates on a "Funnel Model," processing the student pool through three distinct layers of filtering and scoring.
+Tier 1: The Biological Filter (Hard Constraints)
+·	Scientific Basis: Chronotype Synchrony & Sensory Processing Sensitivity.
+·	Rationale: Research indicates that sleep deprivation caused by "Social Jetlag" (mismatched sleep schedules) is the primary physiological predictor of roommate conflict and lower GPA. Furthermore, individuals with high Sensory Processing Sensitivity (SPS) cannot adapt to environmental stimuli (light/sound) during sleep.
+·	Implementation Logic: Strict Filtering (Boolean Logic).
+o	Chronotype: Students are categorized as Morning Larks, Intermediate, or Night Owls. A gap of >2 hours in sleep onset is flagged as a high-risk incompatibility.
+o	Photophobia (Light Sensitivity): Students who require absolute darkness (requires_darkness=True) cannot be paired with students who study using ambient room lighting (main_light_user=True).
+o	Action: If a pair fails this tier, the Compatibility Score is nullified immediately. They are never matched.
+Tier 2: The Behavioral Score (Weighted Euclidean Distance)
+·	Scientific Basis: The Similarity-Attraction Effect & Conscientiousness.
+·	Rationale: According to the "Big Five" personality model, Conscientiousness (orderliness, duty, self-discipline) requires Homophily (similarity).
+o	A "High Conscientiousness" student (Orderly) living with a "Low Conscientiousness" student (Disorganized) results in asymmetric conflict (the orderly student feels disrespected; the disorganized student feels harassed).
+·	Implementation Logic: Minimizing Mathematical Distance.
+o	Variables: Cleanliness Standards, Guest Frequency, Sharing of Personal Items.
+o	Weighting: These factors are given the highest numerical weight ($W=2.0$ or $3.0$) in the distance formula because behavioral friction accumulates daily.
+Tier 3: The Social Balance (Complementarity)
+·	Scientific Basis: Interpersonal Complementarity Theory (The Circumplex Model).
+·	Rationale: Unlike cleanliness, social traits (Extraversion and Dominance) do not always require exact similarity.
+o	Dominance: Two individuals with high "Dominance" scores compete for control of the environment (thermostat, rules), leading to power struggles.
+o	Extraversion: A mix of Introversion and Extraversion can be stable, provided Tier 1 (Sleep) and Tier 2 (Cleanliness) are aligned.
+·	Implementation Logic: Range Tolerance.
+o	The algorithm penalizes "Extreme Pairs" (e.g., two Dominant leaders) but allows "Complementary Pairs" (one Leader, one Follower).
+3. The "HiMate" Algorithm (Narrative Description)
+The allocation engine processes a queue of unassigned students ($S$) via the following routine:
+1.	Segregation: The pool is divided by Gender and Academic Year.
+2.	The "Impossible" Filter (Tier 1):
+o	Select Student A.
+o	Fetch all potential Students B.
+o	REJECT if (A.sleep_time - B.sleep_time > 2 hours).
+o	REJECT if (A.light_sensitivity == High AND B.night_activity == High).
+1.	The "Friction" Calculation (Tier 2):
+o	For remaining candidates, calculate the Weighted Euclidean Distance ($D$):
+o	$$D = \sqrt{ W_{clean}(A_{clean} - B_{clean})^2 + W_{guest}(A_{guest} - B_{guest})^2 }$$
+o	Note: $W_{clean}$ is set to 3.0 (Critical Priority).
+1.	The "Social" Adjustment (Tier 3):
+o	Calculate the Dominance Sum. If ($A_{dominance} + B_{dominance}$) > Threshold (indicating two alphas), apply a penalty to the score.
+1.	Optimization:
+o	Sort candidates by lowest $D$.
+o	Assign the pair with the lowest distance.
+o	Remove pair from pool and repeat.
+4. References & Academic Bibliography
+Use these citations to back up your project in the report.
+1. On Sleep & Academic Performance (The Tier 1 Justification):
+·	Adan, A., & Almirall, H. (1991). Horne & Östberg Morningness-Eveningness Questionnaire: A reduced scale. Personality and Individual Differences.
+o	Relevance: Defines how to measure "Chronotypes" (Larks vs Owls).
+·	Gomes, A. A., et al. (2011). Sleep and academic performance in undergraduates: A multi-measure, multi-predictor approach. Chronobiology International.
+o	Relevance: Proves that mismatched sleep schedules lower GPA.
+2. On Sensory Sensitivity (The "Light" Justification):
+·	Aron, E. N., & Aron, A. (1997). Sensory-processing sensitivity and its relation to introversion and emotionality. Journal of Personality and Social Psychology.
+o	Relevance: Validates that "Light Sensitivity" is a biological trait, not just a preference, requiring strict filtering.
+3. On Personality & Roommate Conflict (The Tier 2 Justification):
+·	Tenopia, A., et al. (2018). Roommate Compatibility: The Effects of Personality Traits on Conflict and Satisfaction.
+o	Relevance: Identifies Conscientiousness (Cleanliness) as the strongest predictor of roommate satisfaction.
+·	Byrne, D. (1971). The Attraction Paradigm. Academic Press.
+o	Relevance: Established the "Law of Attraction" (Similarity) for attitudes and values (e.g., guests, smoking).
+4. On The Mathematics of Matching (The Algorithm):
+·	Irving, R. W. (1985). An efficient algorithm for the "stable roommates" problem. Journal of Algorithms.
+o	Relevance: The fundamental computer science paper that proves mathematically how to pair a single pool of people stably.
+5. Practical Data Collection (Survey Design)
+To support this research, the HiMate registration module captures the following data points:
+Variable	Type	Research Tier	Question Example
+Chronotype	Range (0-24)	Tier 1 (Bio)	"What time do you naturally wake up without an alarm?"
+Sensory Sensitivity	Boolean	Tier 1 (Bio)	"Can you sleep if a desk light is on in the room?"
+Cleanliness	Likert (1-5)	Tier 2 (Behav)	"How long do dirty dishes stay in the sink?" (1=Hours, 5=Days)
+Guest Tolerance	Likert (1-5)	Tier 2 (Behav)	"How often should friends visit the room?"
+Social Recharge	Likert (1-5)	Tier 3 (Soc)	"After a long day, do you prefer to chat (5) or be alone (1)?"
+

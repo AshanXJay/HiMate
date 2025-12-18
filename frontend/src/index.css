@@ -1,0 +1,474 @@
+/* AMOLED Black & Orange Theme - HiMate */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
+/* Fallback / Explicit Utilities if Tailwind fails or is stripped */
+.h-screen {
+    height: 100vh;
+}
+
+.w-screen {
+    width: 100vw;
+}
+
+.absolute {
+    position: absolute;
+}
+
+.relative {
+    position: relative;
+}
+
+.inset-0 {
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}
+
+.z-10 {
+    z-index: 10;
+}
+
+.overflow-hidden {
+    overflow: hidden;
+}
+
+:root {
+    /* AMOLED Black + Vibrant Orange Palette */
+    --color-primary: #FF6600;
+    /* Vibrant Orange */
+    --color-primary-hover: #CC5200;
+    /* Darker Orange */
+
+    --color-bg: #000000;
+    /* True Black */
+    --color-surface: #111111;
+    /* Very dark grey for cards */
+    --color-surface-hover: #1A1A1A;
+
+    --color-text-main: #FFFFFF;
+    --color-text-muted: #888888;
+    --color-border: #333333;
+    /* Low contrast border */
+
+    --color-success: #4ADE80;
+    /* Green */
+    --color-error: #FB7185;
+    /* Red */
+    --color-warning: #FBBF24;
+    /* Amber */
+
+    /* Spacing */
+    --spacing-unit: 8px;
+
+    /* Roundness - High rounded corners request */
+    --radius-xs: 8px;
+    --radius-sm: 12px;
+    --radius-md: 16px;
+    --radius-lg: 24px;
+    --radius-xl: 32px;
+
+    /* Shadows - Minimal/Subtle for AMOLED */
+    --shadow-xs: none;
+    --shadow-sm: none;
+    --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.5);
+    /* Heavier dark shadow */
+    --shadow-gl: 0 0 20px rgba(255, 102, 0, 0.2);
+    /* Orange Glow */
+
+    /* Font */
+    --font-family: 'Outfit', sans-serif;
+    /* Modern, minimal sans */
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-family);
+    background-color: var(--color-bg);
+    color: var(--color-text-main);
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    margin-top: 0;
+    color: var(--color-text-main);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+}
+
+p {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    color: var(--color-text-muted);
+}
+
+a {
+    color: var(--color-primary);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+a:hover {
+    color: var(--color-primary-hover);
+}
+
+/* Layout Utilities */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+}
+
+.flex {
+    display: flex;
+}
+
+.flex-col {
+    flex-direction: column;
+}
+
+.items-center {
+    align-items: center;
+}
+
+.justify-between {
+    justify-content: space-between;
+}
+
+.justify-center {
+    justify-content: center;
+}
+
+.gap-2 {
+    gap: 0.5rem;
+}
+
+.gap-4 {
+    gap: 1rem;
+}
+
+.mt-4 {
+    margin-top: 1rem;
+}
+
+.mb-4 {
+    margin-bottom: 1rem;
+}
+
+.my-8 {
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+}
+
+.p-4 {
+    padding: 1rem;
+}
+
+.p-8 {
+    padding: 2rem;
+}
+
+.w-full {
+    width: 100%;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.mx-auto {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.max-w-xs {
+    max-width: 20rem;
+}
+
+.max-w-sm {
+    max-width: 24rem;
+}
+
+.max-w-md {
+    max-width: 28rem;
+}
+
+.max-w-lg {
+    max-width: 32rem;
+}
+
+/* Components */
+
+/* Navbar - Minimal Floating */
+.navbar {
+    background-color: rgba(0, 0, 0, 0.8);
+    border-bottom: 1px solid var(--color-border);
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 2rem;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    backdrop-filter: blur(16px);
+}
+
+.navbar .brand {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--color-text-main);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    letter-spacing: -0.03em;
+}
+
+.navbar .brand span {
+    /* Make emoji stand out or remove it for minimal look? Let's keep it but maybe minimalize */
+    font-size: 1.5rem;
+}
+
+.navbar .nav-links {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+}
+
+.navbar .nav-link {
+    color: var(--color-text-muted);
+    font-weight: 500;
+    font-size: 0.95rem;
+    transition: color 0.2s;
+}
+
+.navbar .nav-link:hover {
+    color: var(--color-text-main);
+}
+
+/* Primary Button is different from Nav Links */
+.navbar .btn-nav {
+    padding: 10px 24px;
+    border-radius: 9999px;
+    /* Pill shape */
+    background-color: var(--color-text-main);
+    /* White button for contrast on black */
+    color: black;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+.navbar .btn-nav:hover {
+    background-color: var(--color-primary);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-gl);
+}
+
+/* Card - Minimal Outline or Dark Surface */
+.card {
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-border);
+    padding: 2.5rem;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    border-color: var(--color-primary);
+    box-shadow: var(--shadow-gl);
+}
+
+/* Buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem 2rem;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 9999px;
+    /* Pill shape for minimal modern look */
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    line-height: 1;
+}
+
+.btn-primary {
+    background-color: var(--color-primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: var(--color-primary-hover);
+    box-shadow: 0 0 25px rgba(255, 102, 0, 0.4);
+    /* Stronger glow */
+    transform: scale(1.02);
+}
+
+.btn-secondary {
+    background-color: transparent;
+    color: var(--color-text-main);
+    border: 1px solid var(--color-border);
+}
+
+.btn-secondary:hover {
+    background-color: var(--color-surface-hover);
+    border-color: var(--color-text-main);
+}
+
+/* Forms */
+.form-group {
+    margin-bottom: 1.5rem;
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 0.75rem;
+    /* More spacing */
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.input-field {
+    width: 100%;
+    padding: 1rem 1.25rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+    font-size: 1rem;
+    font-family: var(--font-family);
+    transition: all 0.2s;
+    background-color: #000000;
+    color: var(--color-text-main);
+}
+
+.input-field:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px rgba(255, 102, 0, 0.2);
+}
+
+/* Footer */
+footer {
+    background-color: black;
+    border-top: 1px solid var(--color-border);
+    color: var(--color-text-muted);
+    padding: 4rem 0;
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+/* Grid System */
+.grid {
+    display: grid;
+    gap: 2rem;
+}
+
+.grid-cols-2 {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.grid-cols-3 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.grid-cols-4 {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+@media (max-width: 1024px) {
+
+    .grid-cols-3,
+    .grid-cols-4 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+
+    .grid-cols-2,
+    .grid-cols-3,
+    .grid-cols-4 {
+        grid-template-columns: 1fr;
+    }
+
+    .navbar {
+        padding: 0 1.5rem;
+    }
+}
+
+/* Status Utilities */
+.status-available {
+    background-color: transparent;
+    color: var(--color-success);
+    border: 1px solid var(--color-success);
+    border-radius: var(--radius-sm);
+    padding: 0.5rem;
+}
+
+.status-full {
+    background-color: transparent;
+    color: var(--color-error);
+    border: 1px solid var(--color-error);
+    border-radius: var(--radius-sm);
+    padding: 0.5rem;
+}
+
+.status-occupied {
+    background-color: transparent;
+    color: var(--color-warning);
+    border: 1px solid var(--color-warning);
+    border-radius: var(--radius-sm);
+    padding: 0.5rem;
+}
+
+.text-success {
+    color: var(--color-success);
+}
+
+.text-error {
+    color: var(--color-error);
+}
+
+.text-warning {
+    color: var(--color-warning);
+}
+
+/* Utilities */
+.hero-text {
+    font-size: 3.5rem;
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.04em;
+    background: white;
+    /* Fallback */
+    color: white;
+    /* Simple clean white text usually looks better on pure black than gradients, but let's try a subtle gradient to orange */
+    background: linear-gradient(135deg, #FFFFFF 0%, #FF6600 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
