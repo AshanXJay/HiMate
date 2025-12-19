@@ -8,6 +8,7 @@ import StudentDashboard from './pages/StudentDashboard';
 import WardenDashboard from './pages/WardenDashboard';
 import RoomGrid from './components/RoomGrid';
 import AllocationControl from './components/AllocationControl';
+import RequireAuth from './components/RequireAuth';
 import { AuthProvider, AuthContext } from './AuthContext';
 
 const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID;
@@ -42,11 +43,33 @@ function App() {
             <Route path="/" element={<Layout />}>
               <Route index element={<Home />} />
               <Route path="login" element={<Login />} />
-              <Route path="survey" element={<Survey />} />
-              <Route path="dashboard" element={<StudentDashboard />} />
-              <Route path="admin/dashboard" element={<WardenDashboard />} />
+
+              {/* Student Routes */}
+              <Route path="dashboard" element={
+                <RequireAuth allowedRoles={['STUDENT']}>
+                  <StudentDashboard />
+                </RequireAuth>
+              } />
+              <Route path="survey" element={
+                <RequireAuth allowedRoles={['STUDENT']}>
+                  <Survey />
+                </RequireAuth>
+              } />
+
+              {/* Warden Routes */}
+              <Route path="admin/dashboard" element={
+                <RequireAuth allowedRoles={['WARDEN']}>
+                  <WardenDashboard />
+                </RequireAuth>
+              } />
+              <Route path="admin/allocation" element={
+                <RequireAuth allowedRoles={['WARDEN']}>
+                  <AllocationControl />
+                </RequireAuth>
+              } />
+
+              {/* Shared Routes (if any, e.g. Rooms might be viewable by both) */}
               <Route path="rooms" element={<RoomGrid />} />
-              <Route path="admin/allocation" element={<AllocationControl />} />
             </Route>
           </Routes>
         </Router>

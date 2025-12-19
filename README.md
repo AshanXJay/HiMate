@@ -65,6 +65,33 @@ cp .env.example .env
 npm start
 ```
 
+## 🛢️ Database Management & Migrations
+### How to Add a New Column (Example)
+1.  **Edit Models**: Open `backend/users/models.py` (or any app) and add your field:
+    ```python
+    phone_number = models.CharField(max_length=15, null=True, blank=True)
+    ```
+2.  **Generate Migration**:
+    ```bash
+    python manage.py makemigrations
+    ```
+    *This creates a new file, e.g., `0002_add_phone_number.py`, describing the change.*
+3.  **Apply to DB**:
+    ```bash
+    python manage.py migrate
+    ```
+    *This executes the `ALTER TABLE` SQL command.*
+
+1.  **Make Migrations**: Tells Django what changed.
+    ```bash
+    cd backend
+    python manage.py makemigrations
+    ```
+2.  **Apply Migrations**: Updates the MySQL database.
+    ```bash
+    python manage.py migrate
+    ```
+
 ## 📖 Documentation
 Detailed structure guides are available in the `docs/` folder:
 *   [Backend Structure](docs/Backend_Structure.md)

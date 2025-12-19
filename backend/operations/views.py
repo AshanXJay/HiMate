@@ -14,10 +14,7 @@ class MaintenanceTicketCreateView(generics.CreateAPIView):
         serializer.save(student=self.request.user)
 
 class DashboardStatsView(views.APIView):
-    # permission_classes = [permissions.IsAdminUser] 
-    # For demo/university project, maybe allow authenticated users to see stats?
-    # Or keep admin only. Let's keep admin only as per doc probably implied or safe.
-    permission_classes = [permissions.AllowAny] # Changed to AllowAny for easier demo/testing if user is not admin
+    permission_classes = [permissions.IsAdminUser]
 
     def get(self, request):
         student_count = CustomUser.objects.filter(role=CustomUser.Role.STUDENT).count()
