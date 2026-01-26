@@ -61,7 +61,7 @@ const HostelManagement = () => {
         setFormData({
             name: hostel.name,
             gender_type: hostel.gender_type,
-            caretaker_name: hostel.caretaker_name,
+            caretaker_name: hostel.caretaker_name || '',
             allocated_batches: hostel.allocated_batches || '',
             latitude: hostel.latitude || '',
             longitude: hostel.longitude || '',
@@ -108,12 +108,17 @@ const HostelManagement = () => {
         });
     };
 
-    if (loading) return <div className="container"><p>Loading...</p></div>;
+    if (loading) return <div className="container p-8"><p>Loading...</p></div>;
 
     return (
-        <div className="container hostel-management">
-            <div className="page-header">
-                <h1>🏨 Hostel Management</h1>
+        <div className="container p-8">
+            <div className="flex justify-between items-center mb-4">
+                <div className="flex items-center gap-4">
+                    <button className="btn btn-secondary" style={{ padding: '0.5rem 1rem' }} onClick={() => navigate('/admin/dashboard')}>
+                        ← Back
+                    </button>
+                    <h1 style={{ margin: 0 }}>🏨 Hostel Management</h1>
+                </div>
                 <button className="btn btn-primary" onClick={() => { setShowForm(true); setEditingHostel(null); resetForm(); }}>
                     + Add Hostel
                 </button>
@@ -121,9 +126,18 @@ const HostelManagement = () => {
 
             {/* Hostel Form Modal */}
             {showForm && (
-                <div className="modal-overlay">
-                    <div className="modal-content">
-                        <h2>{editingHostel ? 'Edit Hostel' : 'Add New Hostel'}</h2>
+                <div style={{
+                    position: 'fixed',
+                    top: 0, left: 0, right: 0, bottom: 0,
+                    background: 'rgba(0,0,0,0.8)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 1000,
+                    padding: '2rem'
+                }}>
+                    <div className="card" style={{ maxWidth: '500px', width: '100%' }}>
+                        <h2 style={{ marginBottom: '1.5rem' }}>{editingHostel ? 'Edit Hostel' : 'Add New Hostel'}</h2>
                         <form onSubmit={handleSubmit}>
                             <div className="form-group">
                                 <label>Hostel Name *</label>
@@ -135,7 +149,7 @@ const HostelManagement = () => {
                                     required
                                 />
                             </div>
-                            <div className="form-row">
+                            <div className="grid grid-cols-2 gap-4">
                                 <div className="form-group">
                                     <label>Gender Type *</label>
                                     <select
@@ -166,9 +180,9 @@ const HostelManagement = () => {
                                     value={formData.allocated_batches}
                                     onChange={e => setFormData({ ...formData, allocated_batches: e.target.value })}
                                 />
-                                <small>Comma-separated batch years</small>
+                                <small style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem' }}>Comma-separated batch years</small>
                             </div>
-                            <div className="form-row">
+                            <div className="grid grid-cols-2 gap-4">
                                 <div className="form-group">
                                     <label>Latitude</label>
                                     <input
@@ -190,16 +204,7 @@ const HostelManagement = () => {
                                     />
                                 </div>
                             </div>
-                            <div className="form-group">
-                                <label>Address</label>
-                                <textarea
-                                    className="input-field"
-                                    rows="2"
-                                    value={formData.address}
-                                    onChange={e => setFormData({ ...formData, address: e.target.value })}
-                                />
-                            </div>
-                            <div className="modal-actions">
+                            <div className="flex justify-between" style={{ paddingTop: '1.5rem', borderTop: '1px solid var(--color-border)' }}>
                                 <button type="button" className="btn btn-secondary" onClick={() => setShowForm(false)}>
                                     Cancel
                                 </button>
@@ -212,58 +217,63 @@ const HostelManagement = () => {
                 </div>
             )}
 
-            {/* Hostels List */}
-            <div className="hostels-grid">
+            {/* Hostels Grid */}
+            <div className="grid grid-cols-2 gap-4 my-8">
                 {hostels.map(hostel => (
-                    <div key={hostel.id} className="card hostel-card">
-                        <div className="hostel-header">
-                            <h3>{hostel.name}</h3>
-                            <span className={`gender-badge ${hostel.gender_type?.toLowerCase()}`}>
+                    <div key={hostel.id} className="card">
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 style={{ margin: 0 }}>{hostel.name}</h3>
+                            <span style={{
+                                padding: '0.25rem 0.75rem',
+                                borderRadius: 'var(--radius-sm)',
+                                fontSize: '0.75rem',
+                                fontWeight: '600',
+                                background: hostel.gender_type === 'MALE' ? 'rgba(59, 130, 246, 0.2)' : 'rgba(236, 72, 153, 0.2)',
+                                color: hostel.gender_type === 'MALE' ? '#3b82f6' : '#ec4899'
+                            }}>
                                 {hostel.gender_type === 'MALE' ? '👨' : '👩'} {hostel.gender_type}
                             </span>
                         </div>
-                        <div className="hostel-stats">
-                            <div className="stat">
-                                <span className="label">Rooms</span>
-                                <span className="value">{hostel.rooms_count || 0}</span>
+                        <div className="flex gap-4 mb-4">
+                            <div>
+                                <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', margin: 0 }}>Rooms</p>
+                                <p style={{ fontSize: '1.25rem', fontWeight: '600', margin: 0 }}>{hostel.rooms_count || 0}</p>
                             </div>
-                            <div className="stat">
-                                <span className="label">Available Beds</span>
-                                <span className="value">{hostel.available_beds || 0}</span>
+                            <div>
+                                <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', margin: 0 }}>Available Beds</p>
+                                <p style={{ fontSize: '1.25rem', fontWeight: '600', margin: 0 }}>{hostel.available_beds || 0}</p>
                             </div>
                         </div>
-                        {hostel.allocated_batches && (
-                            <div className="hostel-batches">
-                                <span className="label">Batches:</span>
-                                {hostel.batches_list?.map((b, i) => (
-                                    <span key={i} className="batch-tag">{b}</span>
-                                ))}
-                            </div>
-                        )}
                         {hostel.caretaker_name && (
-                            <p className="caretaker">Caretaker: {hostel.caretaker_name}</p>
+                            <p style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)', marginBottom: '1rem' }}>
+                                Caretaker: {hostel.caretaker_name}
+                            </p>
                         )}
-                        <div className="hostel-actions">
+                        <div className="flex gap-2" style={{ flexWrap: 'wrap' }}>
                             <button
-                                className="btn btn-sm btn-secondary"
-                                onClick={() => navigate(`/admin/hostel/${hostel.id}/rooms`)}
+                                className="btn btn-secondary"
+                                style={{ padding: '0.5rem 1rem', fontSize: '0.75rem' }}
+                                onClick={() => navigate(`/rooms?hostel=${hostel.id}`)}
                             >
                                 View Rooms
                             </button>
                             <button
-                                className="btn btn-sm btn-secondary"
+                                className="btn btn-secondary"
+                                style={{ padding: '0.5rem 1rem', fontSize: '0.75rem' }}
                                 onClick={() => handleGenerateRooms(hostel.id)}
                             >
                                 + Rooms
                             </button>
                             <button
-                                className="btn btn-sm btn-secondary"
+                                className="btn btn-secondary"
+                                style={{ padding: '0.5rem 1rem', fontSize: '0.75rem' }}
                                 onClick={() => handleEdit(hostel)}
                             >
                                 Edit
                             </button>
                             <button
-                                className="btn btn-sm btn-danger"
+                                className="btn btn-secondary"
+                                style={{ padding: '0.5rem 1rem', fontSize: '0.75rem', color: 'var(--color-error)', borderColor: 'var(--color-error)' }}
                                 onClick={() => handleDelete(hostel.id)}
                             >
                                 Delete
@@ -274,7 +284,7 @@ const HostelManagement = () => {
             </div>
 
             {hostels.length === 0 && (
-                <div className="empty-state">
+                <div className="text-center p-8" style={{ color: 'var(--color-text-muted)' }}>
                     <p>No hostels found. Add your first hostel!</p>
                 </div>
             )}

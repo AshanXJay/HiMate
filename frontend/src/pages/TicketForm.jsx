@@ -52,24 +52,36 @@ const TicketForm = () => {
     };
 
     return (
-        <div className="container form-page">
-            <div className="card form-card">
-                <h2>🔧 Report Maintenance Issue</h2>
-                <p className="form-description">
+        <div className="flex items-center justify-center" style={{ minHeight: '100vh', padding: '2rem' }}>
+            <div className="card" style={{ maxWidth: '500px', width: '100%' }}>
+                <h2 style={{ marginBottom: '0.5rem' }}>🔧 Report Maintenance Issue</h2>
+                <p style={{ marginBottom: '2rem' }}>
                     Report any maintenance or inventory issues in your room or common areas.
                 </p>
 
-                {error && <div className="alert alert-error">{error}</div>}
+                {error && (
+                    <div style={{
+                        padding: '1rem',
+                        background: 'rgba(251, 113, 133, 0.1)',
+                        border: '1px solid var(--color-error)',
+                        borderRadius: 'var(--radius-md)',
+                        marginBottom: '1.5rem',
+                        color: 'var(--color-error)'
+                    }}>
+                        {error}
+                    </div>
+                )}
 
                 <form onSubmit={handleSubmit}>
                     <div className="form-group">
                         <label>Category *</label>
-                        <div className="category-grid">
+                        <div className="grid grid-cols-4 gap-2">
                             {categories.map(cat => (
                                 <button
                                     key={cat.value}
                                     type="button"
-                                    className={`category-btn ${formData.category === cat.value ? 'active' : ''}`}
+                                    className={formData.category === cat.value ? 'btn btn-primary' : 'btn btn-secondary'}
+                                    style={{ padding: '0.75rem 0.5rem', fontSize: '0.875rem' }}
                                     onClick={() => setFormData({ ...formData, category: cat.value })}
                                 >
                                     {cat.label}
@@ -112,10 +124,11 @@ const TicketForm = () => {
                             value={formData.description}
                             onChange={e => setFormData({ ...formData, description: e.target.value })}
                             required
+                            style={{ resize: 'vertical', minHeight: '100px' }}
                         />
                     </div>
 
-                    <div className="form-actions">
+                    <div className="flex justify-between" style={{ paddingTop: '1.5rem', borderTop: '1px solid var(--color-border)' }}>
                         <button type="button" className="btn btn-secondary" onClick={() => navigate('/dashboard')}>
                             Cancel
                         </button>

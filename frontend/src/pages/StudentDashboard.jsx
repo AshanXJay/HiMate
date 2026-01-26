@@ -43,10 +43,9 @@ const StudentDashboard = () => {
         }
     };
 
-    // Get display name - prioritize full_name, then first_name, then username
     const getDisplayName = () => {
         if (user?.full_name && user.full_name !== user.username) {
-            return user.full_name.split(' ')[0]; // First name
+            return user.full_name.split(' ')[0];
         }
         if (user?.first_name) {
             return user.first_name;
@@ -54,64 +53,69 @@ const StudentDashboard = () => {
         return user?.username || 'Student';
     };
 
-    const getStatusBadge = (status) => {
-        const statusColors = {
-            'PENDING': 'status-pending',
-            'PENDING_B': 'status-pending',
-            'PENDING_WARDEN': 'status-pending',
-            'VIEWED': 'status-viewed',
-            'IN_PROGRESS': 'status-progress',
-            'APPROVED': 'status-approved',
-            'REJECTED': 'status-rejected',
-            'COMPLETED': 'status-approved',
-            'OPEN': 'status-pending',
-            'RESOLVED': 'status-approved'
-        };
-        return statusColors[status] || 'status-pending';
+    const getStatusClass = (status) => {
+        if (['APPROVED', 'COMPLETED', 'RESOLVED'].includes(status)) return 'text-success';
+        if (['REJECTED', 'CANCELLED'].includes(status)) return 'text-error';
+        return 'text-warning';
     };
 
-    if (!user) return <div className="container"><p>Loading...</p></div>;
+    if (!user) return <div className="container p-8"><p>Loading...</p></div>;
 
     return (
-        <div className="container">
-            <header className="dashboard-header">
+        <div className="container p-8">
+            {/* Header */}
+            <div className="flex justify-between items-center mb-4" style={{ paddingBottom: '1.5rem', borderBottom: '1px solid var(--color-border)' }}>
                 <div>
-                    <h1 className="welcome-text">Hello, <span className="highlight">{getDisplayName()}</span> 👋</h1>
-                    <p className="enrollment-badge">{user.enrollment_number || 'Pending Enrollment'}</p>
+                    <h1 style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>
+                        Hello, <span style={{ color: 'var(--color-primary)' }}>{getDisplayName()}</span> 👋
+                    </h1>
+                    <span style={{
+                        padding: '0.25rem 0.75rem',
+                        background: 'var(--color-surface)',
+                        border: '1px solid var(--color-border)',
+                        borderRadius: 'var(--radius-sm)',
+                        fontSize: '0.875rem',
+                        color: 'var(--color-primary)'
+                    }}>
+                        {user.enrollment_number || 'Pending Enrollment'}
+                    </span>
                 </div>
-                <button onClick={logout} className="btn btn-danger">Logout</button>
-            </header>
+                <button onClick={logout} className="btn btn-secondary" style={{ padding: '0.75rem 1.5rem' }}>
+                    Logout
+                </button>
+            </div>
 
-            <div className="dashboard-grid">
+            {/* Main Grid */}
+            <div className="grid grid-cols-2 my-8">
                 {/* Allocation Status Card */}
-                <div className="card allocation-card">
-                    <h3>🏠 Allocation Status</h3>
+                <div className="card">
+                    <h3 style={{ marginBottom: '1rem' }}>🏠 Allocation Status</h3>
                     {allocation ? (
-                        <div className="allocation-details">
-                            <div className="status-badge status-approved">ALLOCATED</div>
-                            <div className="details-grid">
-                                <div className="detail-item">
-                                    <span className="label">Hostel</span>
-                                    <span className="value">{allocation.hostel_name}</span>
+                        <div className="text-center">
+                            <span className="status-available" style={{ marginBottom: '1rem', display: 'inline-block' }}>
+                                ALLOCATED
+                            </span>
+                            <div className="grid grid-cols-3 gap-4 my-8" style={{ background: 'var(--color-bg)', padding: '1.5rem', borderRadius: 'var(--radius-md)' }}>
+                                <div>
+                                    <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginBottom: '0.25rem' }}>Hostel</p>
+                                    <p style={{ fontSize: '1.125rem', fontWeight: '600', color: 'white', margin: 0 }}>{allocation.hostel_name}</p>
                                 </div>
-                                <div className="detail-item">
-                                    <span className="label">Room</span>
-                                    <span className="value">{allocation.room?.room_number}</span>
+                                <div>
+                                    <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginBottom: '0.25rem' }}>Room</p>
+                                    <p style={{ fontSize: '1.125rem', fontWeight: '600', color: 'white', margin: 0 }}>{allocation.room?.room_number}</p>
                                 </div>
-                                <div className="detail-item">
-                                    <span className="label">Bed</span>
-                                    <span className="value">{allocation.bed?.bed_number || 'N/A'}</span>
+                                <div>
+                                    <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginBottom: '0.25rem' }}>Bed</p>
+                                    <p style={{ fontSize: '1.125rem', fontWeight: '600', color: 'white', margin: 0 }}>{allocation.bed?.bed_number || 'N/A'}</p>
                                 </div>
                             </div>
 
                             {allocation.roommates?.length > 0 && (
-                                <div className="roommates-section">
-                                    <h4>Roommates</h4>
-                                    <ul>
-                                        {allocation.roommates.map((r, i) => (
-                                            <li key={i}>{r.name} (Bed {r.bed})</li>
-                                        ))}
-                                    </ul>
+                                <div style={{ marginTop: '1rem', padding: '1rem', background: 'var(--color-bg)', borderRadius: 'var(--radius-md)' }}>
+                                    <h4 style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)', marginBottom: '0.5rem' }}>Roommates</h4>
+                                    {allocation.roommates.map((r, i) => (
+                                        <p key={i} style={{ margin: '0.25rem 0', color: 'white' }}>{r.name} (Bed {r.bed})</p>
+                                    ))}
                                 </div>
                             )}
 
@@ -121,16 +125,17 @@ const StudentDashboard = () => {
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="btn btn-secondary mt-4"
+                                    style={{ padding: '0.75rem 1.5rem' }}
                                 >
                                     📍 View on Map
                                 </a>
                             )}
                         </div>
                     ) : (
-                        <div className="no-allocation">
+                        <div className="text-center p-4">
                             {user.is_profile_complete ? (
                                 <>
-                                    <div className="status-badge status-pending">Pending Allocation</div>
+                                    <span className="status-occupied" style={{ display: 'inline-block', marginBottom: '1rem' }}>Pending Allocation</span>
                                     <p>Your profile is complete. Waiting for allocation.</p>
                                 </>
                             ) : (
@@ -144,98 +149,111 @@ const StudentDashboard = () => {
                 </div>
 
                 {/* Quick Actions Card */}
-                <div className="card actions-card">
-                    <h3>⚡ Quick Actions</h3>
-                    <div className="actions-grid">
+                <div className="card">
+                    <h3 style={{ marginBottom: '1rem' }}>⚡ Quick Actions</h3>
+                    <div className="grid grid-cols-2 gap-4">
                         {!user.is_profile_complete && (
-                            <Link to="/survey" className="action-btn primary">
+                            <Link to="/survey" className="btn btn-primary" style={{ padding: '1rem' }}>
                                 📝 Complete Survey
                             </Link>
                         )}
                         {user.is_profile_complete && (
-                            <Link to="/survey" className="action-btn secondary">
+                            <Link to="/survey" className="btn btn-secondary" style={{ padding: '1rem' }}>
                                 ✏️ Update Preferences
                             </Link>
                         )}
                         {allocation && (
                             <>
-                                <Link to="/request/swap" className="action-btn secondary">
+                                <Link to="/request/swap" className="btn btn-secondary" style={{ padding: '1rem' }}>
                                     🔄 Request Swap
                                 </Link>
-                                <Link to="/request/outpass" className="action-btn secondary">
+                                <Link to="/request/outpass" className="btn btn-secondary" style={{ padding: '1rem' }}>
                                     🎫 Request Outpass
                                 </Link>
-                                <Link to="/request/ticket" className="action-btn secondary">
+                                <Link to="/request/ticket" className="btn btn-secondary" style={{ padding: '1rem' }}>
                                     🔧 Report Issue
                                 </Link>
                             </>
                         )}
                     </div>
                 </div>
+            </div>
 
-                {/* My Requests Card */}
-                <div className="card requests-card full-width">
-                    <h3>📋 My Requests</h3>
+            {/* My Requests */}
+            <div className="card">
+                <h3 style={{ marginBottom: '1.5rem' }}>📋 My Requests</h3>
 
-                    {/* Tabs */}
-                    <div className="requests-section">
-                        {/* Swap Requests */}
-                        {requests.swaps.length > 0 && (
-                            <div className="request-group">
-                                <h4>Swap Requests</h4>
-                                {requests.swaps.slice(0, 3).map(swap => (
-                                    <div key={swap.id} className="request-item">
-                                        <div className="request-info">
-                                            <span>With: {swap.student_b_name || swap.student_b_enrollment}</span>
-                                            <span className={`status-badge ${getStatusBadge(swap.status)}`}>
-                                                {swap.status.replace('_', ' ')}
-                                            </span>
-                                        </div>
-                                        <Link to={`/request/swap/${swap.id}`} className="view-link">View</Link>
-                                    </div>
-                                ))}
+                <div className="grid grid-cols-3 gap-4">
+                    {/* Swap Requests */}
+                    <div>
+                        <h4 style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)', marginBottom: '0.75rem' }}>Swap Requests</h4>
+                        {requests.swaps.length > 0 ? requests.swaps.slice(0, 3).map(swap => (
+                            <div key={swap.id} style={{
+                                padding: '0.75rem',
+                                background: 'var(--color-bg)',
+                                borderRadius: 'var(--radius-sm)',
+                                marginBottom: '0.5rem',
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center'
+                            }}>
+                                <div>
+                                    <span style={{ fontSize: '0.875rem' }}>{swap.student_b_name || swap.student_b_enrollment}</span>
+                                    <span className={getStatusClass(swap.status)} style={{ marginLeft: '0.5rem', fontSize: '0.75rem' }}>
+                                        {swap.status?.replace('_', ' ')}
+                                    </span>
+                                </div>
+                                <Link to={`/request/swap/${swap.id}`} style={{ fontSize: '0.875rem' }}>View</Link>
                             </div>
-                        )}
+                        )) : <p style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>No swap requests</p>}
+                    </div>
 
-                        {/* Outpasses */}
-                        {requests.outpasses.length > 0 && (
-                            <div className="request-group">
-                                <h4>Outpasses</h4>
-                                {requests.outpasses.slice(0, 3).map(pass => (
-                                    <div key={pass.id} className="request-item">
-                                        <div className="request-info">
-                                            <span>{pass.leave_date} - {pass.return_date}</span>
-                                            <span className={`status-badge ${getStatusBadge(pass.status)}`}>
-                                                {pass.status}
-                                            </span>
-                                        </div>
-                                        <Link to={`/request/outpass/${pass.id}`} className="view-link">View</Link>
-                                    </div>
-                                ))}
+                    {/* Outpasses */}
+                    <div>
+                        <h4 style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)', marginBottom: '0.75rem' }}>Outpasses</h4>
+                        {requests.outpasses.length > 0 ? requests.outpasses.slice(0, 3).map(pass => (
+                            <div key={pass.id} style={{
+                                padding: '0.75rem',
+                                background: 'var(--color-bg)',
+                                borderRadius: 'var(--radius-sm)',
+                                marginBottom: '0.5rem',
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center'
+                            }}>
+                                <div>
+                                    <span style={{ fontSize: '0.875rem' }}>{pass.leave_date}</span>
+                                    <span className={getStatusClass(pass.status)} style={{ marginLeft: '0.5rem', fontSize: '0.75rem' }}>
+                                        {pass.status}
+                                    </span>
+                                </div>
+                                <Link to={`/request/outpass/${pass.id}`} style={{ fontSize: '0.875rem' }}>View</Link>
                             </div>
-                        )}
+                        )) : <p style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>No outpasses</p>}
+                    </div>
 
-                        {/* Tickets */}
-                        {requests.tickets.length > 0 && (
-                            <div className="request-group">
-                                <h4>Maintenance Tickets</h4>
-                                {requests.tickets.slice(0, 3).map(ticket => (
-                                    <div key={ticket.id} className="request-item">
-                                        <div className="request-info">
-                                            <span>#{ticket.id} - {ticket.title}</span>
-                                            <span className={`status-badge ${getStatusBadge(ticket.status)}`}>
-                                                {ticket.status.replace('_', ' ')}
-                                            </span>
-                                        </div>
-                                        <Link to={`/request/ticket/${ticket.id}`} className="view-link">View</Link>
-                                    </div>
-                                ))}
+                    {/* Tickets */}
+                    <div>
+                        <h4 style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)', marginBottom: '0.75rem' }}>Maintenance Tickets</h4>
+                        {requests.tickets.length > 0 ? requests.tickets.slice(0, 3).map(ticket => (
+                            <div key={ticket.id} style={{
+                                padding: '0.75rem',
+                                background: 'var(--color-bg)',
+                                borderRadius: 'var(--radius-sm)',
+                                marginBottom: '0.5rem',
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center'
+                            }}>
+                                <div>
+                                    <span style={{ fontSize: '0.875rem' }}>#{ticket.id} - {ticket.title?.substring(0, 20)}</span>
+                                    <span className={getStatusClass(ticket.status)} style={{ marginLeft: '0.5rem', fontSize: '0.75rem' }}>
+                                        {ticket.status?.replace('_', ' ')}
+                                    </span>
+                                </div>
+                                <Link to={`/request/ticket/${ticket.id}`} style={{ fontSize: '0.875rem' }}>View</Link>
                             </div>
-                        )}
-
-                        {requests.swaps.length === 0 && requests.outpasses.length === 0 && requests.tickets.length === 0 && (
-                            <p className="no-requests">No active requests</p>
-                        )}
+                        )) : <p style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>No tickets</p>}
                     </div>
                 </div>
             </div>

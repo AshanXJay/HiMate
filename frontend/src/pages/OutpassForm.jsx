@@ -34,21 +34,31 @@ const OutpassForm = () => {
         }
     };
 
-    // Get minimum date (today)
     const today = new Date().toISOString().split('T')[0];
 
     return (
-        <div className="container form-page">
-            <div className="card form-card">
-                <h2>🎫 Request Outpass</h2>
-                <p className="form-description">
+        <div className="flex items-center justify-center" style={{ minHeight: '100vh', padding: '2rem' }}>
+            <div className="card" style={{ maxWidth: '500px', width: '100%' }}>
+                <h2 style={{ marginBottom: '0.5rem' }}>🎫 Request Outpass</h2>
+                <p style={{ marginBottom: '2rem' }}>
                     Request permission to leave the hostel premises for a specified period.
                 </p>
 
-                {error && <div className="alert alert-error">{error}</div>}
+                {error && (
+                    <div style={{
+                        padding: '1rem',
+                        background: 'rgba(251, 113, 133, 0.1)',
+                        border: '1px solid var(--color-error)',
+                        borderRadius: 'var(--radius-md)',
+                        marginBottom: '1.5rem',
+                        color: 'var(--color-error)'
+                    }}>
+                        {error}
+                    </div>
+                )}
 
                 <form onSubmit={handleSubmit}>
-                    <div className="form-row">
+                    <div className="grid grid-cols-2 gap-4">
                         <div className="form-group">
                             <label>Leave Date *</label>
                             <input
@@ -82,6 +92,7 @@ const OutpassForm = () => {
                             value={formData.reason}
                             onChange={e => setFormData({ ...formData, reason: e.target.value })}
                             required
+                            style={{ resize: 'vertical', minHeight: '100px' }}
                         />
                     </div>
 
@@ -107,7 +118,7 @@ const OutpassForm = () => {
                         />
                     </div>
 
-                    <div className="form-actions">
+                    <div className="flex justify-between" style={{ paddingTop: '1.5rem', borderTop: '1px solid var(--color-border)' }}>
                         <button type="button" className="btn btn-secondary" onClick={() => navigate('/dashboard')}>
                             Cancel
                         </button>

@@ -32,14 +32,25 @@ const SwapRequestForm = () => {
     };
 
     return (
-        <div className="container form-page">
-            <div className="card form-card">
-                <h2>🔄 Request Room Swap</h2>
-                <p className="form-description">
+        <div className="flex items-center justify-center" style={{ minHeight: '100vh', padding: '2rem' }}>
+            <div className="card" style={{ maxWidth: '500px', width: '100%' }}>
+                <h2 style={{ marginBottom: '0.5rem' }}>🔄 Request Room Swap</h2>
+                <p style={{ marginBottom: '2rem' }}>
                     Request to swap rooms with another student. They will need to approve before the warden reviews.
                 </p>
 
-                {error && <div className="alert alert-error">{error}</div>}
+                {error && (
+                    <div style={{
+                        padding: '1rem',
+                        background: 'rgba(251, 113, 133, 0.1)',
+                        border: '1px solid var(--color-error)',
+                        borderRadius: 'var(--radius-md)',
+                        marginBottom: '1.5rem',
+                        color: 'var(--color-error)'
+                    }}>
+                        {error}
+                    </div>
+                )}
 
                 <form onSubmit={handleSubmit}>
                     <div className="form-group">
@@ -52,7 +63,9 @@ const SwapRequestForm = () => {
                             onChange={e => setFormData({ ...formData, student_b_enrollment: e.target.value })}
                             required
                         />
-                        <small>Enter the enrollment number of the student you want to swap with</small>
+                        <small style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem' }}>
+                            Enter the enrollment number of the student you want to swap with
+                        </small>
                     </div>
 
                     <div className="form-group">
@@ -63,10 +76,11 @@ const SwapRequestForm = () => {
                             placeholder="Explain why you want to swap rooms..."
                             value={formData.reason}
                             onChange={e => setFormData({ ...formData, reason: e.target.value })}
+                            style={{ resize: 'vertical', minHeight: '100px' }}
                         />
                     </div>
 
-                    <div className="form-actions">
+                    <div className="flex justify-between" style={{ paddingTop: '1.5rem', borderTop: '1px solid var(--color-border)' }}>
                         <button type="button" className="btn btn-secondary" onClick={() => navigate('/dashboard')}>
                             Cancel
                         </button>

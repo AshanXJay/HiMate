@@ -44,161 +44,134 @@ const WardenDashboard = () => {
     };
 
     if (loading) {
-        return <div className="container"><p>Loading dashboard...</p></div>;
+        return <div className="container p-8"><p>Loading dashboard...</p></div>;
     }
 
     return (
-        <div className="container warden-dashboard">
-            <header className="dashboard-header">
+        <div className="container p-8">
+            {/* Header */}
+            <div className="flex justify-between items-center mb-4" style={{ paddingBottom: '1.5rem', borderBottom: '1px solid var(--color-border)' }}>
                 <div>
-                    <h1>Warden Dashboard</h1>
-                    <p className="text-muted">Hostel Management System</p>
+                    <h1 style={{ fontSize: '2rem', marginBottom: '0.25rem' }}>Warden Dashboard</h1>
+                    <p style={{ margin: 0, color: 'var(--color-text-muted)' }}>Hostel Management System</p>
                 </div>
-                <button onClick={logout} className="btn btn-danger">Logout</button>
-            </header>
+                <button onClick={logout} className="btn btn-secondary" style={{ padding: '0.75rem 1.5rem' }}>
+                    Logout
+                </button>
+            </div>
 
             {/* Stats Grid */}
-            <div className="stats-grid">
-                <div className="stat-card primary">
-                    <div className="stat-icon">👨‍🎓</div>
-                    <div className="stat-content">
-                        <h3>{stats?.students?.total || 0}</h3>
-                        <p>Total Students</p>
+            <div className="grid grid-cols-4 my-8">
+                <div className="card" style={{ borderLeft: '4px solid var(--color-primary)' }}>
+                    <div className="flex items-center gap-4">
+                        <span style={{ fontSize: '2rem' }}>👨‍🎓</span>
+                        <div>
+                            <h3 style={{ fontSize: '1.75rem', margin: 0 }}>{stats?.students?.total || 0}</h3>
+                            <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', margin: 0 }}>Total Students</p>
+                        </div>
                     </div>
                 </div>
-                <div className="stat-card success">
-                    <div className="stat-icon">✅</div>
-                    <div className="stat-content">
-                        <h3>{stats?.students?.allocated || 0}</h3>
-                        <p>Allocated</p>
+                <div className="card" style={{ borderLeft: '4px solid var(--color-success)' }}>
+                    <div className="flex items-center gap-4">
+                        <span style={{ fontSize: '2rem' }}>✅</span>
+                        <div>
+                            <h3 style={{ fontSize: '1.75rem', margin: 0 }}>{stats?.students?.allocated || 0}</h3>
+                            <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', margin: 0 }}>Allocated</p>
+                        </div>
                     </div>
                 </div>
-                <div className="stat-card warning">
-                    <div className="stat-icon">⏳</div>
-                    <div className="stat-content">
-                        <h3>{stats?.students?.pending_allocation || 0}</h3>
-                        <p>Pending</p>
+                <div className="card" style={{ borderLeft: '4px solid var(--color-warning)' }}>
+                    <div className="flex items-center gap-4">
+                        <span style={{ fontSize: '2rem' }}>⏳</span>
+                        <div>
+                            <h3 style={{ fontSize: '1.75rem', margin: 0 }}>{stats?.students?.pending_allocation || 0}</h3>
+                            <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', margin: 0 }}>Pending</p>
+                        </div>
                     </div>
                 </div>
-                <div className="stat-card info">
-                    <div className="stat-icon">🛏️</div>
-                    <div className="stat-content">
-                        <h3>{stats?.beds?.available || 0}</h3>
-                        <p>Available Beds</p>
+                <div className="card" style={{ borderLeft: '4px solid #06b6d4' }}>
+                    <div className="flex items-center gap-4">
+                        <span style={{ fontSize: '2rem' }}>🛏️</span>
+                        <div>
+                            <h3 style={{ fontSize: '1.75rem', margin: 0 }}>{stats?.beds?.available || 0}</h3>
+                            <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', margin: 0 }}>Available Beds</p>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            {/* Occupancy Overview */}
-            <div className="card occupancy-card">
-                <h3>🏠 Occupancy Rate</h3>
-                <div className="occupancy-bar-container">
+            {/* Occupancy Rate */}
+            <div className="card mb-4">
+                <h3 style={{ marginBottom: '1rem' }}>🏠 Occupancy Rate</h3>
+                <div style={{ height: '12px', background: 'var(--color-border)', borderRadius: '9999px', overflow: 'hidden', marginBottom: '0.5rem' }}>
                     <div
-                        className="occupancy-bar"
-                        style={{ width: `${stats?.beds?.occupancy_rate || 0}%` }}
+                        style={{
+                            height: '100%',
+                            background: 'linear-gradient(90deg, var(--color-success), var(--color-warning))',
+                            width: `${stats?.beds?.occupancy_rate || 0}%`,
+                            borderRadius: '9999px'
+                        }}
                     />
                 </div>
-                <p className="occupancy-text">
-                    {stats?.beds?.occupied || 0} / {stats?.beds?.total || 0} beds occupied
-                    ({stats?.beds?.occupancy_rate || 0}%)
+                <p style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)', margin: 0 }}>
+                    {stats?.beds?.occupied || 0} / {stats?.beds?.total || 0} beds occupied ({stats?.beds?.occupancy_rate || 0}%)
                 </p>
             </div>
 
-            {/* Admin Actions */}
-            <div className="card actions-card">
-                <h3>⚡ Quick Actions</h3>
-                <div className="actions-grid">
-                    <button onClick={runAllocation} className="action-btn primary">
+            {/* Quick Actions */}
+            <div className="card mb-4">
+                <h3 style={{ marginBottom: '1rem' }}>⚡ Quick Actions</h3>
+                <div className="grid grid-cols-4 gap-4">
+                    <button onClick={runAllocation} className="btn btn-primary">
                         🧠 Run Smart Allocation
                     </button>
-                    <Link to="/admin/allocation" className="action-btn secondary">
+                    <Link to="/admin/allocation" className="btn btn-secondary">
                         👁️ View Allocations
                     </Link>
-                    <Link to="/admin/hostels" className="action-btn secondary">
+                    <Link to="/admin/hostels" className="btn btn-secondary">
                         🏨 Manage Hostels
                     </Link>
-                    <Link to="/rooms" className="action-btn secondary">
+                    <Link to="/rooms" className="btn btn-secondary">
                         🚪 View Rooms
                     </Link>
                 </div>
             </div>
 
-            {/* Pending Requests Overview */}
-            <div className="pending-section">
-                <div className="card requests-summary">
-                    <h3>📋 Pending Requests</h3>
-                    <div className="request-counts">
-                        <div className="count-item">
-                            <span className="count">{stats?.requests?.pending_hostel || 0}</span>
-                            <span className="label">Hostel Requests</span>
-                        </div>
-                        <div className="count-item">
-                            <span className="count">{stats?.requests?.pending_swaps || 0}</span>
-                            <span className="label">Swap Requests</span>
-                        </div>
-                        <div className="count-item">
-                            <span className="count">{stats?.requests?.pending_outpasses || 0}</span>
-                            <span className="label">Outpasses</span>
-                        </div>
-                        <div className="count-item">
-                            <span className="count">{stats?.tickets?.total_active || 0}</span>
-                            <span className="label">Open Tickets</span>
-                        </div>
+            {/* Pending Summary */}
+            <div className="card">
+                <h3 style={{ marginBottom: '1.5rem' }}>📋 Pending Requests</h3>
+                <div className="grid grid-cols-4 gap-4 mb-4">
+                    <div className="text-center p-4" style={{ background: 'var(--color-bg)', borderRadius: 'var(--radius-md)' }}>
+                        <span style={{ display: 'block', fontSize: '1.5rem', fontWeight: '700', color: 'var(--color-primary)' }}>
+                            {stats?.requests?.pending_hostel || 0}
+                        </span>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>Hostel Requests</span>
                     </div>
-                    <div className="request-links">
-                        <Link to="/admin/requests/swaps" className="btn btn-secondary">View Swaps</Link>
-                        <Link to="/admin/requests/outpasses" className="btn btn-secondary">View Outpasses</Link>
-                        <Link to="/admin/tickets" className="btn btn-secondary">View Tickets</Link>
+                    <div className="text-center p-4" style={{ background: 'var(--color-bg)', borderRadius: 'var(--radius-md)' }}>
+                        <span style={{ display: 'block', fontSize: '1.5rem', fontWeight: '700', color: 'var(--color-primary)' }}>
+                            {stats?.requests?.pending_swaps || 0}
+                        </span>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>Swap Requests</span>
                     </div>
+                    <div className="text-center p-4" style={{ background: 'var(--color-bg)', borderRadius: 'var(--radius-md)' }}>
+                        <span style={{ display: 'block', fontSize: '1.5rem', fontWeight: '700', color: 'var(--color-primary)' }}>
+                            {stats?.requests?.pending_outpasses || 0}
+                        </span>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>Outpasses</span>
+                    </div>
+                    <div className="text-center p-4" style={{ background: 'var(--color-bg)', borderRadius: 'var(--radius-md)' }}>
+                        <span style={{ display: 'block', fontSize: '1.5rem', fontWeight: '700', color: 'var(--color-primary)' }}>
+                            {stats?.tickets?.total_active || 0}
+                        </span>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>Open Tickets</span>
+                    </div>
+                </div>
+                <div className="flex gap-4">
+                    <Link to="/admin/requests/swaps" className="btn btn-secondary" style={{ padding: '0.75rem 1.5rem' }}>View Swaps</Link>
+                    <Link to="/admin/requests/outpasses" className="btn btn-secondary" style={{ padding: '0.75rem 1.5rem' }}>View Outpasses</Link>
+                    <Link to="/admin/requests/tickets" className="btn btn-secondary" style={{ padding: '0.75rem 1.5rem' }}>View Tickets</Link>
                 </div>
             </div>
-
-            {/* Recent Tickets */}
-            {pendingRequests?.tickets?.length > 0 && (
-                <div className="card tickets-card">
-                    <h3>🔧 Recent Maintenance Issues</h3>
-                    <div className="tickets-list">
-                        {pendingRequests.tickets.slice(0, 5).map(ticket => (
-                            <div key={ticket.id} className="ticket-item">
-                                <div className="ticket-info">
-                                    <span className={`priority-badge priority-${ticket.priority?.toLowerCase()}`}>
-                                        {ticket.priority}
-                                    </span>
-                                    <span className="ticket-category">{ticket.category}</span>
-                                    <span className="ticket-title">{ticket.title}</span>
-                                </div>
-                                <div className="ticket-meta">
-                                    <span className="ticket-room">{ticket.room_info?.hostel} - {ticket.room_info?.room_number}</span>
-                                    <Link to={`/admin/ticket/${ticket.id}`} className="btn btn-sm">View</Link>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
-
-            {/* Tickets by Category */}
-            {stats?.tickets?.by_category?.length > 0 && (
-                <div className="card category-card">
-                    <h3>📊 Issues by Category</h3>
-                    <div className="category-bars">
-                        {stats.tickets.by_category.map((cat, i) => (
-                            <div key={i} className="category-item">
-                                <span className="category-name">{cat.category}</span>
-                                <div className="category-bar-container">
-                                    <div
-                                        className="category-bar"
-                                        style={{
-                                            width: `${Math.min(100, (cat.count / Math.max(...stats.tickets.by_category.map(c => c.count))) * 100)}%`
-                                        }}
-                                    />
-                                </div>
-                                <span className="category-count">{cat.count}</span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
         </div>
     );
 };
