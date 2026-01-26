@@ -1,63 +1,72 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { AuthContext } from '../AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
 
 const Login = () => {
-    const { loginWithGoogle } = useContext(AuthContext);
+    const { user, loginWithGoogle } = useContext(AuthContext);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        // Redirect if already logged in
+        if (user) {
+            if (user.role === 'WARDEN') {
+                navigate('/admin/dashboard');
+            } else {
+                navigate('/dashboard');
+            }
+        }
+    }, [user, navigate]);
 
     const handleSuccess = async (credentialResponse) => {
         try {
-            await loginWithGoogle(credentialResponse);
-            navigate('/dashboard');
+            const userData = await loginWithGoogle(credentialResponse);
+            if (userData.role === 'WARDEN') {
+                navigate('/admin/dashboard');
+            } else {
+                navigate('/dashboard');
+            }
         } catch (error) {
-            alert('Login failed. Please ensure you are using a @std.uwu.ac.lk account.');
+            console.error("Login error:", error);
+            const errorMsg = error.response?.data?.error ||
+                'Login failed. Please ensure you are using a @std.uwu.ac.lk account.';
+            alert(errorMsg);
         }
     };
 
     const handleError = () => {
-        alert('Google Login Failed');
+        alert('Google Login Failed. Please try again.');
     };
 
     return (
-        <div className="flex items-center justify-center w-full h-screen relative overflow-hidden bg-black">
+        <div className="login-page">
+            <div className="card login-card">
+                <div className="logo">🏛️</div>
+                <h1>HiMate Portal</h1>
+                <p className="tagline">
+                    Smart Hostel Allocation System<br />
+                    <span style={{ color: 'var(--primary-light)', fontWeight: 500 }}>
+                        Uva Wellassa University
+                    </span>
+                </p>
 
-            {/* Ambient Background Elements */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary opacity-10 rounded-full blur-[120px] pointer-events-none"></div>
-
-            <div className="card relative z-10 p-10 w-full max-w-md border border-neutral-800 bg-[#0a0a0a]/90 backdrop-blur-xl shadow-2xl">
-                <div className="text-center">
-                    <div className="mx-auto w-16 h-16 bg-surface-hover rounded-2xl flex items-center justify-center mb-6 shadow-gl border border-white/5 text-3xl">
-                        🏛️
-                    </div>
-
-                    <h1 className="text-3xl font-bold text-white mb-2 tracking-tight">HiMate Portal</h1>
-                    <p className="text-muted text-sm mb-8">
-                        The Official Residence Allocation System for <br />
-                        <span className="text-white font-medium">Uva Wellassa University</span>
-                    </p>
-
-                    <div className="flex justify-center mb-8 transform hover:scale-105 transition-transform duration-300">
-                        <GoogleLogin
-                            onSuccess={handleSuccess}
-                            onError={handleError}
-                            useOneTap
-                            shape="pill"
-                            theme="filled_black"
-                            size="large"
-                            text="continue_with"
-                            width="250"
-                        />
-                    </div>
-
-                    <div className="border-t border-white/5 pt-6">
-                        <p className="text-xs text-muted">
-                            Authorized Access Only.
-                            <span className="block mt-1 opacity-50">Please use your university email (@std.uwu.ac.lk)</span>
-                        </p>
-                    </div>
+                <div className="google-btn">
+                    <GoogleLogin
+                        onSuccess={handleSuccess}
+                        onError={handleError}
+                        useOneTap
+                        shape="pill"
+                        theme="filled_black"
+                        size="large"
+                        text="continue_with"
+                        width="280"
+                    />
                 </div>
+
+                <p className="login-note">
+                    Authorized Access Only<br />
+                    <span style={{ opacity: 0.7 }}>Use your university email (@std.uwu.ac.lk)</span>
+                </p>
             </div>
         </div>
     );

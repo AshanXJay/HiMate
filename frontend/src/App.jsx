@@ -8,6 +8,12 @@ import StudentDashboard from './pages/StudentDashboard';
 import WardenDashboard from './pages/WardenDashboard';
 import RoomGrid from './components/RoomGrid';
 import AllocationControl from './components/AllocationControl';
+import SwapRequestForm from './pages/SwapRequestForm';
+import OutpassForm from './pages/OutpassForm';
+import TicketForm from './pages/TicketForm';
+import RequestDetail from './pages/RequestDetail';
+import HostelManagement from './pages/HostelManagement';
+import WardenRequestsPage from './pages/WardenRequestsPage';
 import RequireAuth from './components/RequireAuth';
 import { AuthProvider, AuthContext } from './AuthContext';
 
@@ -31,7 +37,11 @@ const Home = () => {
     }
   }, [user, loading, navigate]);
 
-  return null; // Or a loading spinner
+  return (
+    <div className="loading-screen">
+      <div className="loading-spinner"></div>
+    </div>
+  );
 };
 
 function App() {
@@ -56,6 +66,30 @@ function App() {
                 </RequireAuth>
               } />
 
+              {/* Student Request Forms */}
+              <Route path="request/swap" element={
+                <RequireAuth allowedRoles={['STUDENT']}>
+                  <SwapRequestForm />
+                </RequireAuth>
+              } />
+              <Route path="request/outpass" element={
+                <RequireAuth allowedRoles={['STUDENT']}>
+                  <OutpassForm />
+                </RequireAuth>
+              } />
+              <Route path="request/ticket" element={
+                <RequireAuth allowedRoles={['STUDENT']}>
+                  <TicketForm />
+                </RequireAuth>
+              } />
+
+              {/* Request Detail (both student and warden can view) */}
+              <Route path="request/:type/:id" element={
+                <RequireAuth allowedRoles={['STUDENT', 'WARDEN']}>
+                  <RequestDetail />
+                </RequireAuth>
+              } />
+
               {/* Warden Routes */}
               <Route path="admin/dashboard" element={
                 <RequireAuth allowedRoles={['WARDEN']}>
@@ -67,8 +101,23 @@ function App() {
                   <AllocationControl />
                 </RequireAuth>
               } />
+              <Route path="admin/hostels" element={
+                <RequireAuth allowedRoles={['WARDEN']}>
+                  <HostelManagement />
+                </RequireAuth>
+              } />
+              <Route path="admin/requests/:type" element={
+                <RequireAuth allowedRoles={['WARDEN']}>
+                  <WardenRequestsPage />
+                </RequireAuth>
+              } />
+              <Route path="admin/tickets" element={
+                <RequireAuth allowedRoles={['WARDEN']}>
+                  <WardenRequestsPage />
+                </RequireAuth>
+              } />
 
-              {/* Shared Routes (if any, e.g. Rooms might be viewable by both) */}
+              {/* Shared Routes */}
               <Route path="rooms" element={<RoomGrid />} />
             </Route>
           </Routes>
