@@ -18,7 +18,43 @@ class ProfileUpdateView(generics.RetrieveUpdateAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self):
-        return self.request.user.profile
+        user = self.request.user
+        
+        # Try to get existing profile
+        try:
+            return user.profile
+        except StudentProfile.DoesNotExist:
+            # Profile doesn't exist - create one with proper enrollment
+            import uuid
+            import re
+            
+            email = user.email
+            enrollment = None
+            batch = ''
+            
+            # Try to parse UWU email format
+            match = re.search(r'^([a-zA-Z]{2,4})(\d{2})(\d{3})@std\.uwu\.ac\.lk$', email)
+            if match:
+                deg = match.group(1).upper()
+                yr = match.group(2)
+                num = match.group(3)
+                enrollment = f"UWU/{deg}/{yr}/{num}"
+                batch = yr
+            else:
+                short_id = str(uuid.uuid4())[:8].upper()
+                enrollment = f"UWU/GEN/{short_id}"
+            
+            # Ensure uniqueness
+            while StudentProfile.objects.filter(enrollment_number=enrollment).exists():
+                short_id = str(uuid.uuid4())[:8].upper()
+                enrollment = f"UWU/GEN/{short_id}"
+            
+            return StudentProfile.objects.create(
+                user=user,
+                enrollment_number=enrollment,
+                full_name=user.get_full_name() or user.username,
+                batch=batch
+            )
 
     def perform_update(self, serializer):
         serializer.save()

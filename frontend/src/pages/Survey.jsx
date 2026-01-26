@@ -211,7 +211,7 @@ const SurveyWizard = () => {
                     Step {step} of {totalSteps}
                 </p>
 
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit} onKeyDown={(e) => { if (e.key === 'Enter' && step < totalSteps) e.preventDefault(); }}>
                     {renderStep()}
 
                     <div className="flex justify-between mt-4" style={{ paddingTop: '1.5rem', borderTop: '1px solid var(--color-border)' }}>
