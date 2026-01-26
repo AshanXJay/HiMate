@@ -464,39 +464,6 @@ npm install
 npm start
 ```
 
-### 3.2 Environment Variables
-
-#### Backend (.env):
-```
-SECRET_KEY=your-django-secret-key
-DEBUG=True
-GOOGLE_CLIENT_ID=your-google-client-id
-WARDEN_EMAIL=warden@example.com
-ALLOWED_HOSTS=localhost,127.0.0.1
-CORS_ALLOWED_ORIGINS=http://localhost:3000
-```
-
-#### Frontend (.env):
-```
-REACT_APP_GOOGLE_CLIENT_ID=your-google-client-id
-REACT_APP_API_URL=http://127.0.0.1:8000
-```
-
-### 3.3 Test Scenarios
-
-#### Happy Path:
-1. Login with Google (@std.uwu.ac.lk)
-2. Complete 5-step survey wizard
-3. Warden creates hostel and generates rooms
-4. Warden runs smart allocation
-5. Student views allocated room and roommates
-6. Student requests room swap
-7. Partner approves swap
-8. Warden approves swap
-9. Students view updated rooms
-10. Student files maintenance ticket
-11. Staff resolves ticket
-
 ================================================================================
 ## 4. FEATURE SUMMARY BY ROLE
 ================================================================================
@@ -527,21 +494,3 @@ REACT_APP_API_URL=http://127.0.0.1:8000
 | Approve Swaps          | Review and approve/reject swaps          |
 | Approve Outpasses      | Review and approve/reject leave          |
 | Manage Tickets         | Update status and provide feedback       |
-
-================================================================================
-## 5. PENDING ENHANCEMENTS
-================================================================================
-
-| Feature                     | Priority | Developer | Notes                    |
-|-----------------------------|----------|-----------|--------------------------|
-| Email notifications         | High     | Dev 1     | For approvals/rejections |
-| Mobile responsive testing   | High     | All       | Touch-friendly UI        |
-| Bulk student import         | Medium   | Dev 1     | CSV upload for students  |
-| Room swap history           | Medium   | Dev 4     | Audit trail              |
-| Ticket photos               | Medium   | Dev 5     | Attach images to tickets |
-| Analytics dashboard         | Low      | Dev 5     | Charts (recharts)        |
-| Push notifications          | Low      | Dev 1     | Browser notifications    |
-
-================================================================================
-END OF IMPLEMENTATION DOCUMENTATION
-================================================================================
