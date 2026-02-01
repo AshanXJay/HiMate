@@ -18,13 +18,42 @@ const SurveyWizard = () => {
 
     const totalSteps = 5;
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const handleSubmit = async () => {
+        if (loading) return; // Prevent double submission
         setLoading(true);
         try {
+            // Step 1: Update profile with survey data
+            console.log("Submitting survey data:", formData);
             await axios.patch(`${API_URL}/api/profile/update/`, formData, {
                 headers: getAuthHeader()
             });
+            console.log("Profile updated successfully");
+
+            // Step 2: Automatically create hostel request
+            // The backend will automatically determine semester/level from enrollment
+            try {
+                console.log("Creating hostel request...");
+                const hostelRes = await axios.post(`${API_URL}/api/requests/hostel/`, {
+                    reason: "Hostel accommodation requested via survey completion"
+                }, { headers: getAuthHeader() });
+                console.log("Hostel request created successfully:", hostelRes.data);
+            } catch (hostelErr) {
+                console.error("Hostel request error:", hostelErr.response?.status, hostelErr.response?.data);
+                // Check if not eligible
+                if (hostelErr.response?.status === 403) {
+                    const data = hostelErr.response.data;
+                    alert(`Not Eligible for Hostel:\n\n${data.reason}\n\nLevel: ${data.level}\nSemester: ${data.semester}`);
+                    // Still proceed to dashboard, they just won't have a hostel request
+                } else if (hostelErr.response?.status === 400 && hostelErr.response?.data?.error?.includes('pending')) {
+                    // Request already exists - this is fine
+                    console.log("Hostel request already exists");
+                } else {
+                    // Log other errors but don't block
+                    console.error("Unexpected hostel request error:", hostelErr.response?.data);
+                }
+            }
+
+            // Step 3: Refresh user data and navigate
             await refreshUserData();
             navigate('/dashboard');
         } catch (error) {
@@ -211,7 +240,7 @@ const SurveyWizard = () => {
                     Step {step} of {totalSteps}
                 </p>
 
-                <form onSubmit={handleSubmit} onKeyDown={(e) => { if (e.key === 'Enter' && step < totalSteps) e.preventDefault(); }}>
+                <div>
                     {renderStep()}
 
                     <div className="flex justify-between mt-4" style={{ paddingTop: '1.5rem', borderTop: '1px solid var(--color-border)' }}>
@@ -226,13 +255,13 @@ const SurveyWizard = () => {
                                     Next →
                                 </button>
                             ) : (
-                                <button type="submit" className="btn btn-primary" disabled={loading}>
+                                <button type="button" className="btn btn-primary" disabled={loading} onClick={handleSubmit}>
                                     {loading ? 'Saving...' : 'Complete Survey ✓'}
                                 </button>
                             )}
                         </div>
                     </div>
-                </form>
+                </div>
             </div>
         </div>
     );

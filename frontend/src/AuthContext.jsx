@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { googleLogout } from '@react-oauth/google';
 
@@ -10,6 +10,19 @@ export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
+    // Logout function defined with useCallback to use in the interceptor
+    const logout = useCallback(() => {
+        googleLogout();
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        localStorage.removeItem('user');
+        setUser(null);
+        // Redirect to login if not already there
+        if (window.location.pathname !== '/login' && window.location.pathname !== '/') {
+            window.location.href = '/login';
+        }
+    }, []);
+
     useEffect(() => {
         const token = localStorage.getItem('access_token');
         if (token) {
@@ -18,6 +31,25 @@ export const AuthProvider = ({ children }) => {
         }
         setLoading(false);
     }, []);
+
+    // Setup axios interceptor to handle 401 errors globally
+    useEffect(() => {
+        const interceptor = axios.interceptors.response.use(
+            (response) => response,
+            (error) => {
+                if (error.response?.status === 401) {
+                    console.log('Session expired or invalid token - logging out');
+                    logout();
+                }
+                return Promise.reject(error);
+            }
+        );
+
+        // Cleanup interceptor on unmount
+        return () => {
+            axios.interceptors.response.eject(interceptor);
+        };
+    }, [logout]);
 
     const loginWithGoogle = async (credentialResponse) => {
         try {
@@ -62,13 +94,7 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    const logout = () => {
-        googleLogout();
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
-        localStorage.removeItem('user');
-        setUser(null);
-    };
+
 
     const getAuthHeader = () => {
         const token = localStorage.getItem('access_token');

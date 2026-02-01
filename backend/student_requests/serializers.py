@@ -21,14 +21,18 @@ class StatusHistorySerializer(serializers.ModelSerializer):
 class HostelRequestSerializer(serializers.ModelSerializer):
     student_name = serializers.SerializerMethodField()
     student_enrollment = serializers.SerializerMethodField()
+    student_batch = serializers.SerializerMethodField()
+    student_gender = serializers.SerializerMethodField()
     status_history = serializers.SerializerMethodField()
     
     class Meta:
         model = HostelRequest
         fields = ['id', 'student', 'student_name', 'student_enrollment', 
-                  'academic_year', 'semester', 'status', 'reason', 
+                  'student_batch', 'student_gender',
+                  'academic_year', 'semester', 'status', 'reason', 'rejection_reason',
                   'created_at', 'updated_at', 'status_history']
-        read_only_fields = ['student', 'status', 'created_at', 'updated_at']
+        # academic_year and semester are set by the view based on enrollment
+        read_only_fields = ['student', 'academic_year', 'semester', 'status', 'created_at', 'updated_at']
     
     def get_student_name(self, obj):
         if hasattr(obj.student, 'profile'):
@@ -39,6 +43,14 @@ class HostelRequestSerializer(serializers.ModelSerializer):
         if hasattr(obj.student, 'profile'):
             return obj.student.profile.enrollment_number
         return None
+    
+    def get_student_batch(self, obj):
+        if hasattr(obj.student, 'profile'):
+            return obj.student.profile.batch
+        return None
+    
+    def get_student_gender(self, obj):
+        return obj.student.gender if hasattr(obj.student, 'gender') else None
     
     def get_status_history(self, obj):
         history = StatusHistory.objects.filter(

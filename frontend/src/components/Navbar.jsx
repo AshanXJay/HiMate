@@ -6,13 +6,13 @@ const Navbar = () => {
     const { user, logout } = useContext(AuthContext);
     return (
         <nav className="navbar">
-            <div className="brand">
-                <span role="img" aria-label="logo" style={{ fontSize: '1.5rem' }}>🤝</span> HiMate
-            </div>
+            <Link to="/">
+                <div className="brand">
+                    <span role="img" aria-label="logo" style={{ fontSize: '1.5rem' }}>🤝</span> HiMate
+                </div>
+            </Link>
 
             <div className="nav-links">
-                <Link to="/" className="nav-link">Home</Link>
-                <Link to="/rooms" className="nav-link">Rooms</Link>
                 {user ? (
                     <button onClick={logout} className="nav-link" style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
                         Logout

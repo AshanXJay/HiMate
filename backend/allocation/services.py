@@ -208,11 +208,23 @@ def find_best_matches(students, max_per_group=4):
     return groups
 
 def get_eligible_students(semester, gender=None, batch=None):
-    """Get students eligible for allocation"""
+    """
+    Get students eligible for allocation.
+    Only students with PENDING hostel requests are eligible.
+    Students with REJECTED requests are NOT eligible.
+    """
+    from student_requests.models import HostelRequest, HostelRequestStatus
+    
+    # Get students who have a pending hostel request
+    pending_request_students = HostelRequest.objects.filter(
+        status=HostelRequestStatus.PENDING
+    ).values_list('student_id', flat=True)
+    
     queryset = CustomUser.objects.filter(
         role=CustomUser.Role.STUDENT,
         allocation__isnull=True,
-        is_profile_complete=True
+        is_profile_complete=True,
+        id__in=pending_request_students  # Only students with pending requests
     )
     
     if gender:
@@ -243,6 +255,8 @@ def get_suitable_hostel(student, semester):
 
 def allocate_group_to_room(group, room, semester):
     """Allocate a group of students to available beds in a room"""
+    from student_requests.models import HostelRequest, HostelRequestStatus
+    
     available_beds = Bed.objects.filter(room=room, is_occupied=False)[:len(group)]
     
     allocations = []
@@ -256,6 +270,12 @@ def allocate_group_to_room(group, room, semester):
         bed.is_occupied = True
         bed.save()
         allocations.append(allocation)
+        
+        # Update hostel request status to ALLOCATED
+        HostelRequest.objects.filter(
+            student=student,
+            status=HostelRequestStatus.PENDING
+        ).update(status=HostelRequestStatus.ALLOCATED)
     
     room.update_occupancy()
     return allocations

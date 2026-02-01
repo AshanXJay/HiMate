@@ -2,7 +2,7 @@ from django.urls import path
 from .views import (
     # Hostel Requests
     HostelRequestCreateView, HostelRequestListView, 
-    HostelRequestDetailView, HostelRequestStatusView,
+    HostelRequestDetailView, HostelRequestStatusView, HostelEligibilityView,
     # Swap Requests
     SwapRequestCreateView, SwapRequestListView, 
     SwapRequestDetailView, SwapRequestRespondView, SwapRequestApprovalView,
@@ -16,6 +16,7 @@ from .views import (
 urlpatterns = [
     # Hostel Requests
     path('hostel/', HostelRequestCreateView.as_view(), name='hostel-request-create'),
+    path('hostel/eligibility/', HostelEligibilityView.as_view(), name='hostel-eligibility'),
     path('hostel/list/', HostelRequestListView.as_view(), name='hostel-request-list'),
     path('hostel/<int:pk>/', HostelRequestDetailView.as_view(), name='hostel-request-detail'),
     path('hostel/<int:pk>/status/', HostelRequestStatusView.as_view(), name='hostel-request-status'),

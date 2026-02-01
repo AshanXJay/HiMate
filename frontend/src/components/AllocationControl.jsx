@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../AuthContext';
+import StatCard from './StatCard';
 
 const AllocationControl = () => {
     const navigate = useNavigate();
@@ -10,7 +11,7 @@ const AllocationControl = () => {
     const [stats, setStats] = useState(null);
     const [preview, setPreview] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [semester, setSemester] = useState('Spring 2026');
+    const [semester, setSemester] = useState('2025/2026 - Semester 1');
     const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
@@ -19,9 +20,10 @@ const AllocationControl = () => {
 
     const fetchData = async () => {
         try {
+            // Use the same stats endpoint as admin dashboard
             const [allocRes, statsRes] = await Promise.all([
                 axios.get(`${API_URL}/api/allocation/list/`, { headers: getAuthHeader() }),
-                axios.get(`${API_URL}/api/allocation/stats/`, { headers: getAuthHeader() })
+                axios.get(`${API_URL}/api/operations/dashboard/stats/`, { headers: getAuthHeader() })
             ]);
             setAllocations(allocRes.data);
             setStats(statsRes.data);
@@ -34,7 +36,7 @@ const AllocationControl = () => {
 
     const fetchPreview = async () => {
         try {
-            const res = await axios.get(`${API_URL}/api/allocation/preview/?semester=${semester}`, {
+            const res = await axios.get(`${API_URL}/api/allocation/preview/?semester=${encodeURIComponent(semester)}`, {
                 headers: getAuthHeader()
             });
             setPreview(res.data);
@@ -87,51 +89,19 @@ const AllocationControl = () => {
                     value={semester}
                     onChange={e => setSemester(e.target.value)}
                 >
-                    <option value="Spring 2026">Spring 2026</option>
-                    <option value="Fall 2026">Fall 2026</option>
-                    <option value="Spring 2027">Spring 2027</option>
+                    <option value="2025/2026 - Semester 1">2025/2026 - Semester 1</option>
+                    <option value="2025/2026 - Semester 2">2025/2026 - Semester 2</option>
+                    <option value="2026/2027 - Semester 1">2026/2027 - Semester 1</option>
                 </select>
             </div>
 
-            {/* Stats */}
+            {/* Stats - using same data as admin dashboard */}
             {stats && (
                 <div className="grid grid-cols-4 gap-4 my-8">
-                    <div className="card" style={{ borderLeft: '4px solid #06b6d4' }}>
-                        <div className="flex items-center gap-4">
-                            <span style={{ fontSize: '2rem' }}>👨‍🎓</span>
-                            <div>
-                                <h3 style={{ fontSize: '1.75rem', margin: 0 }}>{stats.students?.profile_complete || 0}</h3>
-                                <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', margin: 0 }}>Ready</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="card" style={{ borderLeft: '4px solid var(--color-success)' }}>
-                        <div className="flex items-center gap-4">
-                            <span style={{ fontSize: '2rem' }}>✅</span>
-                            <div>
-                                <h3 style={{ fontSize: '1.75rem', margin: 0 }}>{stats.students?.allocated || 0}</h3>
-                                <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', margin: 0 }}>Allocated</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="card" style={{ borderLeft: '4px solid var(--color-warning)' }}>
-                        <div className="flex items-center gap-4">
-                            <span style={{ fontSize: '2rem' }}>⏳</span>
-                            <div>
-                                <h3 style={{ fontSize: '1.75rem', margin: 0 }}>{stats.students?.pending || 0}</h3>
-                                <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', margin: 0 }}>Pending</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="card" style={{ borderLeft: '4px solid var(--color-primary)' }}>
-                        <div className="flex items-center gap-4">
-                            <span style={{ fontSize: '2rem' }}>🛏️</span>
-                            <div>
-                                <h3 style={{ fontSize: '1.75rem', margin: 0 }}>{stats.beds?.available || 0}</h3>
-                                <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', margin: 0 }}>Available Beds</p>
-                            </div>
-                        </div>
-                    </div>
+                    <StatCard icon="👨‍🎓" value={stats.students?.total || 0} label="Total Students" color="primary" />
+                    <StatCard icon="✅" value={stats.students?.allocated || 0} label="Allocated" color="success" />
+                    <StatCard icon="⏳" value={stats.students?.pending_allocation || 0} label="Pending" color="warning" />
+                    <StatCard icon="🛏️" value={stats.beds?.available || 0} label="Available Beds" color="default" />
                 </div>
             )}
 

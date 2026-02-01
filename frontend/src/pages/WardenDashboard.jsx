@@ -2,6 +2,7 @@ import React, { useEffect, useState, useContext } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { AuthContext } from '../AuthContext';
+import StatCard from '../components/StatCard';
 
 const WardenDashboard = () => {
     const { API_URL, getAuthHeader, logout } = useContext(AuthContext);
@@ -33,7 +34,7 @@ const WardenDashboard = () => {
 
         try {
             const res = await axios.post(`${API_URL}/api/allocation/run/`, {
-                semester: 'Spring 2026'
+                semester: '2025/2026 - Semester 1'
             }, { headers: getAuthHeader() });
 
             alert(res.data.message);
@@ -62,42 +63,10 @@ const WardenDashboard = () => {
 
             {/* Stats Grid */}
             <div className="grid grid-cols-4 my-8">
-                <div className="card" style={{ borderLeft: '4px solid var(--color-primary)' }}>
-                    <div className="flex items-center gap-4">
-                        <span style={{ fontSize: '2rem' }}>👨‍🎓</span>
-                        <div>
-                            <h3 style={{ fontSize: '1.75rem', margin: 0 }}>{stats?.students?.total || 0}</h3>
-                            <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', margin: 0 }}>Total Students</p>
-                        </div>
-                    </div>
-                </div>
-                <div className="card" style={{ borderLeft: '4px solid var(--color-success)' }}>
-                    <div className="flex items-center gap-4">
-                        <span style={{ fontSize: '2rem' }}>✅</span>
-                        <div>
-                            <h3 style={{ fontSize: '1.75rem', margin: 0 }}>{stats?.students?.allocated || 0}</h3>
-                            <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', margin: 0 }}>Allocated</p>
-                        </div>
-                    </div>
-                </div>
-                <div className="card" style={{ borderLeft: '4px solid var(--color-warning)' }}>
-                    <div className="flex items-center gap-4">
-                        <span style={{ fontSize: '2rem' }}>⏳</span>
-                        <div>
-                            <h3 style={{ fontSize: '1.75rem', margin: 0 }}>{stats?.students?.pending_allocation || 0}</h3>
-                            <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', margin: 0 }}>Pending</p>
-                        </div>
-                    </div>
-                </div>
-                <div className="card" style={{ borderLeft: '4px solid #06b6d4' }}>
-                    <div className="flex items-center gap-4">
-                        <span style={{ fontSize: '2rem' }}>🛏️</span>
-                        <div>
-                            <h3 style={{ fontSize: '1.75rem', margin: 0 }}>{stats?.beds?.available || 0}</h3>
-                            <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', margin: 0 }}>Available Beds</p>
-                        </div>
-                    </div>
-                </div>
+                <StatCard icon="👨‍🎓" value={stats?.students?.total || 0} label="Total Students" color="primary" />
+                <StatCard icon="✅" value={stats?.students?.allocated || 0} label="Allocated" color="success" />
+                <StatCard icon="⏳" value={stats?.students?.pending_allocation || 0} label="Pending" color="warning" />
+                <StatCard icon="🛏️" value={stats?.beds?.available || 0} label="Available Beds" color="default" />
             </div>
 
             {/* Occupancy Rate */}
@@ -166,7 +135,8 @@ const WardenDashboard = () => {
                         <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>Open Tickets</span>
                     </div>
                 </div>
-                <div className="flex gap-4">
+                <div className="flex gap-4" style={{ flexWrap: 'wrap' }}>
+                    <Link to="/admin/requests/hostel" className="btn btn-primary" style={{ padding: '0.75rem 1.5rem' }}>View Hostel Requests</Link>
                     <Link to="/admin/requests/swaps" className="btn btn-secondary" style={{ padding: '0.75rem 1.5rem' }}>View Swaps</Link>
                     <Link to="/admin/requests/outpasses" className="btn btn-secondary" style={{ padding: '0.75rem 1.5rem' }}>View Outpasses</Link>
                     <Link to="/admin/requests/tickets" className="btn btn-secondary" style={{ padding: '0.75rem 1.5rem' }}>View Tickets</Link>

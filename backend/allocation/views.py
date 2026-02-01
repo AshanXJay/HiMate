@@ -90,3 +90,67 @@ class AllocationStatsView(views.APIView):
                 'available': available_beds
             }
         })
+
+
+class ResetAllocationsView(views.APIView):
+    """
+    Reset all allocations for a semester.
+    This clears allocations, resets bed occupancy, and resets hostel request statuses.
+    Students will need to request hostel again.
+    """
+    permission_classes = [permissions.IsAdminUser]
+    
+    def post(self, request):
+        from housing.models import Bed, Room
+        from student_requests.models import HostelRequest, HostelRequestStatus
+        from django.db import transaction
+        
+        semester = request.data.get('semester')
+        confirm = request.data.get('confirm', False)
+        
+        if not confirm:
+            return Response({
+                'error': 'Please confirm reset by setting confirm=true'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        with transaction.atomic():
+            # Get allocations to reset
+            if semester:
+                allocations = Allocation.objects.filter(semester=semester)
+            else:
+                allocations = Allocation.objects.all()
+            
+            allocation_count = allocations.count()
+            
+            # Get bed IDs to reset
+            bed_ids = list(allocations.values_list('bed_id', flat=True))
+            
+            # Delete allocations
+            allocations.delete()
+            
+            # Reset beds to unoccupied
+            Bed.objects.filter(id__in=bed_ids).update(is_occupied=False)
+            
+            # Update room occupancy status
+            Room.objects.all().update(status=Room.Status.AVAILABLE)
+            for room in Room.objects.all():
+                room.update_occupancy()
+            
+            # Reset hostel request statuses to allow new requests
+            # Only reset ALLOCATED requests back to allow re-request
+            HostelRequest.objects.filter(
+                status=HostelRequestStatus.ALLOCATED
+            ).update(status=HostelRequestStatus.PENDING)
+            
+            # Count pending requests that were reset
+            pending_reset = HostelRequest.objects.filter(
+                status=HostelRequestStatus.PENDING
+            ).count()
+        
+        return Response({
+            'message': f'Successfully reset {allocation_count} allocations',
+            'allocations_cleared': allocation_count,
+            'beds_freed': len(bed_ids),
+            'pending_requests': pending_reset,
+            'semester': semester or 'all'
+        })

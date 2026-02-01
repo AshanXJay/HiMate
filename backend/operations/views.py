@@ -141,6 +141,8 @@ class DashboardStatsView(views.APIView):
     permission_classes = [permissions.IsAdminUser]
 
     def get(self, request):
+        from student_requests.models import HostelRequestStatus
+        
         # Student stats
         total_students = CustomUser.objects.filter(role=CustomUser.Role.STUDENT).count()
         profile_complete = CustomUser.objects.filter(
@@ -148,6 +150,9 @@ class DashboardStatsView(views.APIView):
             is_profile_complete=True
         ).count()
         allocated_students = Allocation.objects.count()
+        
+        # Count students with pending hostel requests
+        pending_hostel = HostelRequest.objects.filter(status=HostelRequestStatus.PENDING).count()
         
         # Room stats
         total_rooms = Room.objects.count()
@@ -165,8 +170,11 @@ class DashboardStatsView(views.APIView):
             occupied_beds=Count('rooms__beds', filter=Q(rooms__beds__is_occupied=True))
         ).values('id', 'name', 'gender_type', 'room_count', 'occupied_beds')
         
-        # Request stats
-        pending_hostel_requests = HostelRequest.objects.filter(status=RequestStatus.PENDING).count()
+        # Request stats (using correct status enums)
+        pending_hostel_requests = HostelRequest.objects.filter(status=HostelRequestStatus.PENDING).count()
+        allocated_hostel_requests = HostelRequest.objects.filter(status=HostelRequestStatus.ALLOCATED).count()
+        rejected_hostel_requests = HostelRequest.objects.filter(status=HostelRequestStatus.REJECTED).count()
+        
         pending_swaps = SwapRequest.objects.filter(
             status__in=[SwapRequest.SwapStatus.PENDING_B_APPROVAL, SwapRequest.SwapStatus.PENDING_WARDEN]
         ).count()
@@ -186,7 +194,7 @@ class DashboardStatsView(views.APIView):
                 'total': total_students,
                 'profile_complete': profile_complete,
                 'allocated': allocated_students,
-                'pending_allocation': profile_complete - allocated_students
+                'pending_allocation': pending_hostel  # Students with pending hostel requests
             },
             'rooms': {
                 'total': total_rooms,
@@ -203,6 +211,8 @@ class DashboardStatsView(views.APIView):
             'hostels': list(hostels),
             'requests': {
                 'pending_hostel': pending_hostel_requests,
+                'allocated_hostel': allocated_hostel_requests,
+                'rejected_hostel': rejected_hostel_requests,
                 'pending_swaps': pending_swaps,
                 'pending_outpasses': pending_outpasses
             },
@@ -222,10 +232,11 @@ class RequestsSummaryView(views.APIView):
         from student_requests.serializers import (
             HostelRequestSerializer, SwapRequestSerializer, OutPassSerializer
         )
+        from student_requests.models import HostelRequestStatus
         
         # Recent pending hostel requests
         hostel_requests = HostelRequest.objects.filter(
-            status=RequestStatus.PENDING
+            status=HostelRequestStatus.PENDING
         ).order_by('-created_at')[:10]
         
         # Pending swaps (both stages)

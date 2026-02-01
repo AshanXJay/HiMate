@@ -12,13 +12,20 @@ class RequestStatus(models.TextChoices):
     COMPLETED = 'COMPLETED', 'Completed'
     CANCELLED = 'CANCELLED', 'Cancelled'
 
+class HostelRequestStatus(models.TextChoices):
+    """Status choices specific to hostel requests"""
+    PENDING = 'PENDING', 'Pending'          # Waiting for allocation
+    ALLOCATED = 'ALLOCATED', 'Allocated'    # Successfully allocated (set by system)
+    REJECTED = 'REJECTED', 'Rejected'       # Rejected by warden (requires reason)
+
 class HostelRequest(models.Model):
     """Formal hostel accommodation request from student"""
     student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='hostel_requests')
     academic_year = models.CharField(max_length=20, default='2025/2026')  # e.g., "2025/2026"
-    semester = models.CharField(max_length=50, default='Spring 2026')  # e.g., "Fall 2025"
-    status = models.CharField(max_length=20, choices=RequestStatus.choices, default=RequestStatus.PENDING)
+    semester = models.CharField(max_length=50, default='2025/2026 - Semester 1')  # Set dynamically from semester_utils
+    status = models.CharField(max_length=20, choices=HostelRequestStatus.choices, default=HostelRequestStatus.PENDING)
     reason = models.TextField(blank=True, help_text="Why do you need hostel accommodation?")
+    rejection_reason = models.TextField(blank=True, help_text="Warden's reason for rejection (required if rejected)")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     

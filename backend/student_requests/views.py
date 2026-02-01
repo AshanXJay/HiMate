@@ -40,13 +40,80 @@ class HostelRequestCreateView(generics.CreateAPIView):
     serializer_class = HostelRequestSerializer
     permission_classes = [permissions.IsAuthenticated]
 
+    def create(self, request, *args, **kwargs):
+        from .semester_utils import check_hostel_eligibility
+        
+        # Check if student has enrollment number
+        if not hasattr(request.user, 'profile') or not request.user.profile.enrollment_number:
+            return Response(
+                {'error': 'Enrollment number not found. Please complete your profile first.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Check eligibility
+        eligibility = check_hostel_eligibility(request.user.profile.enrollment_number)
+        if not eligibility['eligible']:
+            return Response(
+                {
+                    'error': 'Not eligible for hostel',
+                    'reason': eligibility['reason'],
+                    'level': eligibility['level'],
+                    'semester': eligibility['semester']
+                },
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        # Check if student already has a pending request
+        existing = HostelRequest.objects.filter(
+            student=request.user,
+            status__in=[RequestStatus.PENDING, RequestStatus.VIEWED, RequestStatus.IN_PROGRESS]
+        ).first()
+        if existing:
+            return Response(
+                {'error': 'Already has a pending request', 'request_id': existing.id},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Store eligibility for use in perform_create
+        self._eligibility = eligibility
+        
+        return super().create(request, *args, **kwargs)
+
     def perform_create(self, serializer):
-        request_obj = serializer.save(student=self.request.user)
+        eligibility = getattr(self, '_eligibility', None)
+        
+        if not eligibility:
+            from .semester_utils import check_hostel_eligibility
+            eligibility = check_hostel_eligibility(self.request.user.profile.enrollment_number)
+        
+        request_obj = serializer.save(
+            student=self.request.user,
+            academic_year=eligibility['academic_year'],
+            semester=f"{eligibility['level']} Level - Semester {eligibility['semester']}"
+        )
         create_status_history(
             'hostel_request', request_obj.id, '', 
             RequestStatus.PENDING, self.request.user, 
-            'Request submitted'
+            f"Request submitted for {eligibility['level']} Level"
         )
+
+class HostelEligibilityView(views.APIView):
+    """Check if current student is eligible for hostel accommodation"""
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get(self, request):
+        from .semester_utils import check_hostel_eligibility, get_current_semester_info
+        
+        if not hasattr(request.user, 'profile') or not request.user.profile.enrollment_number:
+            return Response({
+                'eligible': False,
+                'reason': 'Enrollment number not found. Please complete your profile.',
+                'semester_info': get_current_semester_info()
+            })
+        
+        eligibility = check_hostel_eligibility(request.user.profile.enrollment_number)
+        eligibility['semester_info'] = get_current_semester_info()
+        return Response(eligibility)
 
 class HostelRequestListView(generics.ListAPIView):
     """List hostel requests - students see own, warden sees all"""
@@ -70,27 +137,55 @@ class HostelRequestDetailView(generics.RetrieveUpdateAPIView):
     queryset = HostelRequest.objects.all()
 
 class HostelRequestStatusView(views.APIView):
-    """Warden updates hostel request status"""
+    """Warden rejects hostel request with reason"""
     permission_classes = [permissions.IsAdminUser]
     
     def patch(self, request, pk):
+        from .models import HostelRequestStatus
+        
         try:
             hostel_request = HostelRequest.objects.get(pk=pk)
             old_status = hostel_request.status
             new_status = request.data.get('status')
-            notes = request.data.get('notes', '')
+            rejection_reason = request.data.get('rejection_reason', '').strip()
             
-            if new_status not in RequestStatus.values:
-                return Response({'error': 'Invalid status'}, status=status.HTTP_400_BAD_REQUEST)
+            # Only allow rejection from this endpoint
+            # PENDING is set automatically on creation
+            # ALLOCATED is set automatically by allocation system
+            if new_status != HostelRequestStatus.REJECTED:
+                return Response(
+                    {'error': 'Only rejection is allowed from this endpoint. Allocation is automatic.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
             
-            hostel_request.status = new_status
+            # Rejection reason is required
+            if not rejection_reason:
+                return Response(
+                    {'error': 'Rejection reason is required'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Can only reject PENDING requests
+            if hostel_request.status != HostelRequestStatus.PENDING:
+                return Response(
+                    {'error': f'Cannot reject request with status {hostel_request.status}'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            hostel_request.status = HostelRequestStatus.REJECTED
+            hostel_request.rejection_reason = rejection_reason
             hostel_request.save()
             
             create_status_history(
-                'hostel_request', pk, old_status, new_status, request.user, notes
+                'hostel_request', pk, old_status, HostelRequestStatus.REJECTED, 
+                request.user, rejection_reason
             )
             
-            return Response({'message': 'Status updated', 'status': new_status})
+            return Response({
+                'message': 'Request rejected',
+                'status': HostelRequestStatus.REJECTED,
+                'rejection_reason': rejection_reason
+            })
         except HostelRequest.DoesNotExist:
             return Response({'error': 'Request not found'}, status=status.HTTP_404_NOT_FOUND)
 

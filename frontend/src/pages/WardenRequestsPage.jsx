@@ -20,6 +20,7 @@ const WardenRequestsPage = () => {
 
     const getApiUrl = () => {
         switch (type) {
+            case 'hostel': return `${API_URL}/api/requests/hostel/list/`;
             case 'swaps': return `${API_URL}/api/requests/swap/list/`;
             case 'outpasses': return `${API_URL}/api/requests/outpass/list/`;
             case 'tickets': return `${API_URL}/api/operations/ticket/list/`;
@@ -50,6 +51,21 @@ const WardenRequestsPage = () => {
         try {
             let url, data;
             switch (type) {
+                case 'hostel':
+                    // For hostel, only rejection is allowed through this endpoint
+                    if (action !== 'REJECTED') {
+                        alert('Only rejection is allowed. Allocation is handled automatically.');
+                        setActionLoading(false);
+                        return;
+                    }
+                    if (!notes.trim()) {
+                        alert('Rejection reason is required');
+                        setActionLoading(false);
+                        return;
+                    }
+                    url = `${API_URL}/api/requests/hostel/${requestId}/status/`;
+                    data = { status: 'REJECTED', rejection_reason: notes };
+                    break;
                 case 'swaps':
                     url = `${API_URL}/api/requests/swap/${requestId}/approve/`;
                     data = { approve, notes };
@@ -66,7 +82,12 @@ const WardenRequestsPage = () => {
                     return;
             }
 
-            await axios.post(url, data, { headers: getAuthHeader() });
+            // Use PATCH for hostel status updates, POST for others
+            if (type === 'hostel') {
+                await axios.patch(url, data, { headers: getAuthHeader() });
+            } else {
+                await axios.post(url, data, { headers: getAuthHeader() });
+            }
             setSelectedRequest(null);
             setNotes('');
             fetchRequests();
@@ -78,13 +99,14 @@ const WardenRequestsPage = () => {
     };
 
     const getStatusClass = (status) => {
-        if (['APPROVED', 'COMPLETED', 'RESOLVED', 'CLOSED'].includes(status)) return 'text-success';
+        if (['APPROVED', 'COMPLETED', 'RESOLVED', 'CLOSED', 'ALLOCATED'].includes(status)) return 'text-success';
         if (['REJECTED', 'CANCELLED'].includes(status)) return 'text-error';
         return 'text-warning';
     };
 
     const getTitle = () => {
         switch (type) {
+            case 'hostel': return '🏠 Hostel Requests';
             case 'swaps': return '🔄 Swap Requests';
             case 'outpasses': return '🎫 Outpass Requests';
             case 'tickets': return '🔧 Maintenance Tickets';
@@ -94,6 +116,7 @@ const WardenRequestsPage = () => {
 
     const getFilters = () => {
         switch (type) {
+            case 'hostel': return ['', 'PENDING', 'ALLOCATED', 'REJECTED'];
             case 'swaps': return ['', 'PENDING_B', 'PENDING_WARDEN', 'APPROVED', 'REJECTED'];
             case 'outpasses': return ['', 'PENDING', 'APPROVED', 'REJECTED'];
             case 'tickets': return ['', 'OPEN', 'VIEWED', 'IN_PROGRESS', 'RESOLVED', 'CLOSED'];
@@ -134,6 +157,7 @@ const WardenRequestsPage = () => {
                         <thead>
                             <tr style={{ background: 'var(--color-surface-hover)' }}>
                                 <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.75rem', fontWeight: '600', textTransform: 'uppercase', color: 'var(--color-text-muted)' }}>ID</th>
+                                {type === 'hostel' && <><th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.75rem', fontWeight: '600', textTransform: 'uppercase', color: 'var(--color-text-muted)' }}>Student</th><th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.75rem', fontWeight: '600', textTransform: 'uppercase', color: 'var(--color-text-muted)' }}>Semester</th></>}
                                 {type === 'swaps' && <><th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.75rem', fontWeight: '600', textTransform: 'uppercase', color: 'var(--color-text-muted)' }}>From</th><th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.75rem', fontWeight: '600', textTransform: 'uppercase', color: 'var(--color-text-muted)' }}>To</th></>}
                                 {type === 'outpasses' && <><th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.75rem', fontWeight: '600', textTransform: 'uppercase', color: 'var(--color-text-muted)' }}>Student</th><th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.75rem', fontWeight: '600', textTransform: 'uppercase', color: 'var(--color-text-muted)' }}>Dates</th></>}
                                 {type === 'tickets' && <><th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.75rem', fontWeight: '600', textTransform: 'uppercase', color: 'var(--color-text-muted)' }}>Category</th><th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.75rem', fontWeight: '600', textTransform: 'uppercase', color: 'var(--color-text-muted)' }}>Title</th></>}
@@ -146,6 +170,13 @@ const WardenRequestsPage = () => {
                             {requests.map(req => (
                                 <tr key={req.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
                                     <td style={{ padding: '1rem', fontSize: '0.875rem' }}>#{req.id}</td>
+
+                                    {type === 'hostel' && (
+                                        <>
+                                            <td style={{ padding: '1rem', fontSize: '0.875rem' }}>{req.student_name}<br /><small style={{ color: 'var(--color-text-muted)' }}>{req.student_enrollment}</small></td>
+                                            <td style={{ padding: '1rem', fontSize: '0.875rem' }}>{req.semester}<br /><small style={{ color: 'var(--color-text-muted)' }}>{req.academic_year}</small></td>
+                                        </>
+                                    )}
 
                                     {type === 'swaps' && (
                                         <>
@@ -206,6 +237,17 @@ const WardenRequestsPage = () => {
                         <h2 style={{ marginBottom: '1.5rem' }}>Review Request #{selectedRequest.id}</h2>
 
                         <div style={{ padding: '1rem', background: 'var(--color-bg)', borderRadius: 'var(--radius-md)', marginBottom: '1.5rem' }}>
+                            {type === 'hostel' && (
+                                <>
+                                    <p style={{ marginBottom: '0.5rem' }}><strong>Student:</strong> {selectedRequest.student_name}</p>
+                                    <p style={{ marginBottom: '0.5rem' }}><strong>Enrollment:</strong> {selectedRequest.student_enrollment}</p>
+                                    <p style={{ marginBottom: '0.5rem' }}><strong>Semester:</strong> {selectedRequest.semester} ({selectedRequest.academic_year})</p>
+                                    <p style={{ marginBottom: '0.5rem' }}><strong>Batch:</strong> {selectedRequest.student_batch || 'N/A'}</p>
+                                    <p style={{ marginBottom: '0.5rem' }}><strong>Gender:</strong> {selectedRequest.student_gender || 'N/A'}</p>
+                                    <p style={{ margin: 0 }}><strong>Reason:</strong> {selectedRequest.reason || 'Not provided'}</p>
+                                </>
+                            )}
+
                             {type === 'swaps' && (
                                 <>
                                     <p style={{ marginBottom: '0.5rem' }}><strong>From:</strong> {selectedRequest.student_a_name} ({selectedRequest.student_a_room})</p>
@@ -235,13 +277,19 @@ const WardenRequestsPage = () => {
                         </div>
 
                         <div className="form-group">
-                            <label>{type === 'tickets' ? 'Feedback' : 'Notes'}</label>
+                            <label>
+                                {type === 'hostel' ? 'Rejection Reason (Required)' : type === 'tickets' ? 'Feedback' : 'Notes'}
+                            </label>
                             <textarea
                                 className="input-field"
                                 rows="3"
                                 value={notes}
                                 onChange={e => setNotes(e.target.value)}
-                                placeholder={type === 'tickets' ? 'Add feedback for the student...' : 'Add any notes...'}
+                                placeholder={
+                                    type === 'hostel' ? 'Provide a reason for rejection (required)...' :
+                                        type === 'tickets' ? 'Add feedback for the student...' :
+                                            'Add any notes...'
+                                }
                                 style={{ resize: 'vertical' }}
                             />
                         </div>
@@ -255,7 +303,35 @@ const WardenRequestsPage = () => {
                             </button>
 
                             <div className="flex gap-4">
-                                {type === 'tickets' ? (
+                                {type === 'hostel' ? (
+                                    <>
+                                        {selectedRequest.status === 'PENDING' ? (
+                                            <button
+                                                className="btn"
+                                                style={{
+                                                    background: 'var(--color-error)',
+                                                    color: 'white',
+                                                    opacity: notes.trim() ? 1 : 0.5
+                                                }}
+                                                onClick={() => handleAction(selectedRequest.id, 'REJECTED')}
+                                                disabled={actionLoading || !notes.trim()}
+                                            >
+                                                {actionLoading ? 'Rejecting...' : 'Reject Request'}
+                                            </button>
+                                        ) : selectedRequest.status === 'ALLOCATED' ? (
+                                            <span className="text-success" style={{ fontWeight: '600' }}>
+                                                ✅ Already Allocated
+                                            </span>
+                                        ) : selectedRequest.status === 'REJECTED' ? (
+                                            <span className="text-error" style={{ fontWeight: '600' }}>
+                                                ❌ Already Rejected
+                                            </span>
+                                        ) : null}
+                                        <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', margin: 'auto 0', maxWidth: '200px' }}>
+                                            Allocation is automatic via "Run Smart Allocation"
+                                        </p>
+                                    </>
+                                ) : type === 'tickets' ? (
                                     <>
                                         <button
                                             className="btn btn-secondary"
