@@ -28,9 +28,7 @@ const AllocationControl = () => {
             ]);
             setAllocations(allocRes.data);
             setStats(statsRes.data);
-        } catch (err) {
-            console.error("Error fetching data:", err);
-        } finally {
+        } catch (err) { } finally {
             setLoading(false);
         }
     };
@@ -42,7 +40,6 @@ const AllocationControl = () => {
             });
             setPreview(res.data);
         } catch (err) {
-            console.error("Error fetching preview:", err);
             alert('Failed to generate preview');
         }
     };

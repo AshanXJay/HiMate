@@ -35,7 +35,6 @@ const RequestDetail = () => {
             const res = await axios.get(url, { headers: getAuthHeader() });
             setRequest(res.data);
         } catch (err) {
-            console.error("Failed to fetch request:", err);
             alert('Request not found');
             navigate('/dashboard');
         } finally {

@@ -29,9 +29,7 @@ const StudentDashboard = () => {
                     headers: getAuthHeader()
                 });
                 setAllocation(allocRes.data);
-            } catch (err) {
-                console.log("Not allocated");
-            }
+            } catch (err) { }
 
             // Fetch hostel request
             try {
@@ -41,9 +39,7 @@ const StudentDashboard = () => {
                 if (reqRes.data && reqRes.data.length > 0) {
                     setHostelRequest(reqRes.data[0]);
                 }
-            } catch (err) {
-                console.log("No hostel request found");
-            }
+            } catch (err) { }
 
             // Fetch eligibility (only if profile has enrollment)
             if (user.enrollment_number) {
@@ -52,9 +48,7 @@ const StudentDashboard = () => {
                         headers: getAuthHeader()
                     });
                     setEligibility(eligRes.data);
-                } catch (err) {
-                    console.log("Could not fetch eligibility");
-                }
+                } catch (err) { }
             }
 
             // Fetch other requests
@@ -69,9 +63,7 @@ const StudentDashboard = () => {
                     outpasses: outpassRes.data,
                     tickets: ticketsRes.data
                 });
-            } catch (err) {
-                console.error("Failed to fetch requests", err);
-            }
+            } catch (err) { }
         } finally {
             setDataLoaded(true);
         }

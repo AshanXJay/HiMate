@@ -23,9 +23,7 @@ const WardenDashboard = () => {
             ]);
             setStats(statsRes.data);
             setPendingRequests(requestsRes.data);
-        } catch (err) {
-            console.error("Error fetching dashboard:", err);
-        } finally {
+        } catch (err) { } finally {
             setLoading(false);
         }
     };

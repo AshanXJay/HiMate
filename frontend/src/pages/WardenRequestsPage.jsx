@@ -41,7 +41,6 @@ const WardenRequestsPage = () => {
             const res = await axios.get(url, { headers: getAuthHeader() });
             setRequests(res.data);
         } catch (err) {
-            console.error("Failed to fetch requests:", err);
         } finally {
             setLoading(false);
         }

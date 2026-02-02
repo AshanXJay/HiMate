@@ -31,9 +31,7 @@ const RoomGrid = () => {
             if (res.data.length > 0 && !selectedHostel) {
                 setSelectedHostel(res.data[0].id.toString());
             }
-        } catch (err) {
-            console.error("Error fetching hostels:", err);
-        } finally {
+        } catch (err) { } finally {
             setLoading(false);
         }
     };
@@ -44,9 +42,7 @@ const RoomGrid = () => {
                 headers: getAuthHeader()
             });
             setRooms(res.data);
-        } catch (err) {
-            console.error("Error fetching rooms:", err);
-        }
+        } catch (err) { }
     };
 
     const getRoomClass = (room) => {

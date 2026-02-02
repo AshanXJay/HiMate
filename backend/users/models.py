@@ -65,12 +65,10 @@ def create_student_profile(sender, instance, created, **kwargs):
             short_id = str(uuid.uuid4())[:8].upper()
             enrollment = f"UWU/GEN/{short_id}"
         
-        # Create profile with proper enrollment
-        profile = StudentProfile.objects.create(
+        StudentProfile.objects.create(
             user=instance,
             enrollment_number=enrollment,
             full_name=instance.get_full_name() or instance.username,
             batch=batch
         )
-        print(f"Created StudentProfile with Enrollment: {enrollment}")
 

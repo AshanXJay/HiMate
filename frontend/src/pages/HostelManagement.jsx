@@ -29,9 +29,7 @@ const HostelManagement = () => {
         try {
             const res = await axios.get(`${API_URL}/api/housing/hostels/`, { headers: getAuthHeader() });
             setHostels(res.data);
-        } catch (err) {
-            console.error("Failed to fetch hostels:", err);
-        } finally {
+        } catch (err) { } finally {
             setLoading(false);
         }
     };

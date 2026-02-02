@@ -26,7 +26,6 @@ const Login = () => {
                 navigate('/dashboard');
             }
         } catch (error) {
-            console.error("Login error:", error);
             const errorMsg = error.response?.data?.error ||
                 'Login failed. Please ensure you are using a @std.uwu.ac.lk account.';
             alert(errorMsg);
