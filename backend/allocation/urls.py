@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import (
     RunAllocationView, AllocationPreviewView, MyRoomView,
-    AllocationListView, AllocationStatsView
+    AllocationListView, AllocationStatsView, ResetAllocationsView
 )
 
 urlpatterns = [
@@ -10,4 +10,6 @@ urlpatterns = [
     path('my-room/', MyRoomView.as_view(), name='my-room'),
     path('list/', AllocationListView.as_view(), name='allocation-list'),
     path('stats/', AllocationStatsView.as_view(), name='allocation-stats'),
+    path('reset/', ResetAllocationsView.as_view(), name='reset-allocations'),
 ]
+

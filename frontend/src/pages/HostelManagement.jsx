@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { AuthContext } from '../AuthContext';
+import DashboardHeader from '../components/DashboardHeader';
 
 const HostelManagement = () => {
     const navigate = useNavigate();
@@ -108,10 +109,17 @@ const HostelManagement = () => {
         });
     };
 
-    if (loading) return <div className="container p-8"><p>Loading...</p></div>;
+    if (loading) return <div className="container p-8" style={{ maxWidth: '1200px', margin: '0 auto' }}><p>Loading...</p></div>;
 
     return (
-        <div className="container p-8">
+        <div className="container p-8" style={{ maxWidth: '1200px', margin: '0 auto' }}>
+            {/* Header with Navigation */}
+            <DashboardHeader
+                title="Hostel Management"
+                subtitle="Manage Hostels & Rooms"
+                isWarden={true}
+            />
+
             <div className="flex justify-between items-center mb-4">
                 <div className="flex items-center gap-4">
                     <button className="btn btn-secondary" style={{ padding: '0.5rem 1rem' }} onClick={() => navigate('/admin/dashboard')}>

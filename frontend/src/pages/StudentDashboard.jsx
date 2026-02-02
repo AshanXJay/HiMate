@@ -2,6 +2,7 @@ import React, { useEffect, useState, useContext } from 'react';
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../AuthContext';
+import DashboardHeader from '../components/DashboardHeader';
 
 const StudentDashboard = () => {
     const [allocation, setAllocation] = useState(null);
@@ -120,10 +121,10 @@ const StudentDashboard = () => {
         return 'text-warning';
     };
 
-    if (!user) return <div className="container p-8"><p>Loading...</p></div>;
+    if (!user) return <div className="container p-8" style={{ maxWidth: '1200px', margin: '0 auto' }}><p>Loading...</p></div>;
 
     return (
-        <div className="container p-8">
+        <div className="container p-8" style={{ maxWidth: '1200px', margin: '0 auto' }}>
             {/* Welcome Popup for First-time Students */}
             {showWelcomePopup && (
                 <div style={{
@@ -206,41 +207,28 @@ const StudentDashboard = () => {
                 </div>
             )}
 
-            {/* Header */}
-            <div className="flex justify-between items-center mb-4" style={{ paddingBottom: '1.5rem', borderBottom: '1px solid var(--color-border)' }}>
-                <div>
-                    <h1 style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>
-                        Hello, <span style={{ color: 'var(--color-primary)' }}>{getDisplayName()}</span> 👋
-                    </h1>
-                    <div className="flex gap-4 items-center" style={{ flexWrap: 'wrap' }}>
-                        <span style={{
-                            padding: '0.25rem 0.75rem',
-                            background: 'var(--color-surface)',
-                            border: '1px solid var(--color-border)',
-                            borderRadius: 'var(--radius-sm)',
-                            fontSize: '0.875rem',
-                            color: 'var(--color-primary)'
-                        }}>
-                            {user.enrollment_number || 'Pending Enrollment'}
-                        </span>
-                        {eligibility && eligibility.level && (
-                            <span style={{
-                                padding: '0.25rem 0.75rem',
-                                background: 'var(--color-primary)',
-                                color: 'white',
-                                borderRadius: 'var(--radius-sm)',
-                                fontSize: '0.75rem',
-                                fontWeight: '600'
-                            }}>
-                                {eligibility.level} Level - Sem {eligibility.semester}
-                            </span>
-                        )}
-                    </div>
+            {/* Header with Navigation */}
+            <DashboardHeader
+                title={`Hello, ${getDisplayName()} 👋`}
+                subtitle={user.enrollment_number || 'Complete your profile to get started'}
+                isWarden={false}
+            />
+
+            {/* Level Badge */}
+            {eligibility && eligibility.level && (
+                <div style={{ marginBottom: '1rem' }}>
+                    <span style={{
+                        padding: '0.25rem 0.75rem',
+                        background: 'var(--color-primary)',
+                        color: 'white',
+                        borderRadius: 'var(--radius-sm)',
+                        fontSize: '0.75rem',
+                        fontWeight: '600'
+                    }}>
+                        {eligibility.level} Level - Sem {eligibility.semester}
+                    </span>
                 </div>
-                <button onClick={logout} className="btn btn-secondary" style={{ padding: '0.75rem 1.5rem' }}>
-                    Logout
-                </button>
-            </div>
+            )}
 
             {/* Main Grid */}
             <div className="grid grid-cols-2 my-8">

@@ -3,9 +3,10 @@ import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { AuthContext } from '../AuthContext';
 import StatCard from '../components/StatCard';
+import DashboardHeader from '../components/DashboardHeader';
 
 const WardenDashboard = () => {
-    const { API_URL, getAuthHeader, logout } = useContext(AuthContext);
+    const { API_URL, getAuthHeader } = useContext(AuthContext);
     const [stats, setStats] = useState(null);
     const [pendingRequests, setPendingRequests] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -44,22 +45,46 @@ const WardenDashboard = () => {
         }
     };
 
+    const resetAllocations = async () => {
+        const confirmMsg = 'Are you sure you want to reset ALL allocations?\n\n' +
+            'This will:\n' +
+            '• Clear all room assignments\n' +
+            '• Free all occupied beds\n' +
+            '• Reset hostel requests to pending\n\n' +
+            'Students will need to request hostel again.\n\n' +
+            'Type "RESET" to confirm:';
+
+        const input = window.prompt(confirmMsg);
+        if (input !== 'RESET') {
+            if (input !== null) alert('Reset cancelled. You must type "RESET" exactly.');
+            return;
+        }
+
+        try {
+            const res = await axios.post(`${API_URL}/api/allocation/reset/`, {
+                semester: '2025/2026 - Semester 1',
+                confirm: true
+            }, { headers: getAuthHeader() });
+
+            alert(`✅ ${res.data.message}\n\nAllocations cleared: ${res.data.allocations_cleared}\nBeds freed: ${res.data.beds_freed}`);
+            fetchDashboardData();
+        } catch (err) {
+            alert('Reset failed: ' + (err.response?.data?.error || err.message));
+        }
+    };
+
     if (loading) {
-        return <div className="container p-8"><p>Loading dashboard...</p></div>;
+        return <div className="container p-8" style={{ maxWidth: '1200px', margin: '0 auto' }}><p>Loading dashboard...</p></div>;
     }
 
     return (
-        <div className="container p-8">
-            {/* Header */}
-            <div className="flex justify-between items-center mb-4" style={{ paddingBottom: '1.5rem', borderBottom: '1px solid var(--color-border)' }}>
-                <div>
-                    <h1 style={{ fontSize: '2rem', marginBottom: '0.25rem' }}>Warden Dashboard</h1>
-                    <p style={{ margin: 0, color: 'var(--color-text-muted)' }}>Hostel Management System</p>
-                </div>
-                <button onClick={logout} className="btn btn-secondary" style={{ padding: '0.75rem 1.5rem' }}>
-                    Logout
-                </button>
-            </div>
+        <div className="container p-8" style={{ maxWidth: '1200px', margin: '0 auto' }}>
+            {/* Header with Navigation */}
+            <DashboardHeader
+                title="Warden Dashboard"
+                subtitle="Hostel Management System"
+                isWarden={true}
+            />
 
             {/* Stats Grid */}
             <div className="grid grid-cols-4 my-8">
@@ -100,9 +125,17 @@ const WardenDashboard = () => {
                     <Link to="/admin/hostels" className="btn btn-secondary">
                         🏨 Manage Hostels
                     </Link>
-                    <Link to="/rooms" className="btn btn-secondary">
-                        🚪 View Rooms
-                    </Link>
+                    <button
+                        onClick={resetAllocations}
+                        className="btn"
+                        style={{
+                            background: 'transparent',
+                            border: '1px solid var(--color-error)',
+                            color: 'var(--color-error)'
+                        }}
+                    >
+                        🔄 Reset Semester
+                    </button>
                 </div>
             </div>
 
