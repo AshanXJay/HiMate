@@ -99,9 +99,6 @@ cp .env.example .env
 # Run migrations
 python manage.py migrate
 
-# Create superuser (for admin access)
-python manage.py createsuperuser
-
 # Run server
 python manage.py runserver
 ```
