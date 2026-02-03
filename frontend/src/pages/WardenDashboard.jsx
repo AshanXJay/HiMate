@@ -4,12 +4,16 @@ import { Link } from 'react-router-dom';
 import { AuthContext } from '../AuthContext';
 import StatCard from '../components/StatCard';
 import DashboardHeader from '../components/DashboardHeader';
+import { useToast } from '../components/Toast';
+import { useModal } from '../components/Modal';
 
 const WardenDashboard = () => {
     const { API_URL, getAuthHeader } = useContext(AuthContext);
     const [stats, setStats] = useState(null);
     const [pendingRequests, setPendingRequests] = useState(null);
     const [loading, setLoading] = useState(true);
+    const toast = useToast();
+    const modal = useModal();
 
     useEffect(() => {
         fetchDashboardData();
@@ -29,46 +33,40 @@ const WardenDashboard = () => {
     };
 
     const runAllocation = async () => {
-        if (!window.confirm('Run smart allocation for all pending students?')) return;
-
-        try {
-            const res = await axios.post(`${API_URL}/api/allocation/run/`, {
-                semester: '2025/2026 - Semester 1'
-            }, { headers: getAuthHeader() });
-
-            alert(res.data.message);
-            fetchDashboardData();
-        } catch (err) {
-            alert('Allocation failed: ' + (err.response?.data?.error || err.message));
-        }
+        modal.confirm('Run smart allocation for all pending students?', async () => {
+            try {
+                const res = await axios.post(`${API_URL}/api/allocation/run/`, {
+                    semester: '2025/2026 - Semester 1'
+                }, { headers: getAuthHeader() });
+                toast.success(res.data.message);
+                fetchDashboardData();
+            } catch (err) {
+                toast.error('Allocation failed: ' + (err.response?.data?.error || err.message));
+            }
+        });
     };
 
     const resetAllocations = async () => {
         const confirmMsg = 'Are you sure you want to reset ALL allocations?\n\n' +
-            'This will:\n' +
-            '• Clear all room assignments\n' +
-            '• Free all occupied beds\n' +
-            '• Reset hostel requests to pending\n\n' +
-            'Students will need to request hostel again.\n\n' +
+            'This will:\n• Clear all room assignments\n• Free all occupied beds\n• Reset hostel requests to pending\n\n' +
             'Type "RESET" to confirm:';
 
-        const input = window.prompt(confirmMsg);
-        if (input !== 'RESET') {
-            if (input !== null) alert('Reset cancelled. You must type "RESET" exactly.');
-            return;
-        }
-
-        try {
-            const res = await axios.post(`${API_URL}/api/allocation/reset/`, {
-                semester: '2025/2026 - Semester 1',
-                confirm: true
-            }, { headers: getAuthHeader() });
-
-            alert(`✅ ${res.data.message}\n\nAllocations cleared: ${res.data.allocations_cleared}\nBeds freed: ${res.data.beds_freed}`);
-            fetchDashboardData();
-        } catch (err) {
-            alert('Reset failed: ' + (err.response?.data?.error || err.message));
-        }
+        modal.promptInput(confirmMsg, '', async (input) => {
+            if (input !== 'RESET') {
+                toast.warning('Reset cancelled. You must type "RESET" exactly.');
+                return;
+            }
+            try {
+                const res = await axios.post(`${API_URL}/api/allocation/reset/`, {
+                    semester: '2025/2026 - Semester 1',
+                    confirm: true
+                }, { headers: getAuthHeader() });
+                toast.success(`${res.data.message} - Allocations: ${res.data.allocations_cleared}, Beds freed: ${res.data.beds_freed}`);
+                fetchDashboardData();
+            } catch (err) {
+                toast.error('Reset failed: ' + (err.response?.data?.error || err.message));
+            }
+        });
     };
 
     if (loading) {

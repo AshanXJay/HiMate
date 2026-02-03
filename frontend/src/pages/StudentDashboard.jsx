@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../AuthContext';
 import DashboardHeader from '../components/DashboardHeader';
+import { useToast } from '../components/Toast';
 
 const StudentDashboard = () => {
     const [allocation, setAllocation] = useState(null);
@@ -14,6 +15,7 @@ const StudentDashboard = () => {
     const [showIneligiblePopup, setShowIneligiblePopup] = useState(false);
     const { user, logout, API_URL, getAuthHeader } = useContext(AuthContext);
     const navigate = useNavigate();
+    const toast = useToast();
 
     useEffect(() => {
         if (user) {
@@ -89,7 +91,7 @@ const StudentDashboard = () => {
     };
 
     const handleWelcomeNo = () => {
-        alert("You need hostel accommodation to use this system. Signing you out.");
+        toast.warning('You need hostel accommodation to use this system. Signing you out.');
         logout();
     };
 

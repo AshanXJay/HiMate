@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../AuthContext';
 import StatCard from './StatCard';
 import DashboardHeader from './DashboardHeader';
+import { useToast } from './Toast';
+import { useModal } from './Modal';
 
 const AllocationControl = () => {
     const navigate = useNavigate();
@@ -14,6 +16,8 @@ const AllocationControl = () => {
     const [loading, setLoading] = useState(true);
     const [semester, setSemester] = useState('2025/2026 - Semester 1');
     const [searchTerm, setSearchTerm] = useState('');
+    const toast = useToast();
+    const modal = useModal();
 
     useEffect(() => {
         fetchData();
@@ -40,23 +44,23 @@ const AllocationControl = () => {
             });
             setPreview(res.data);
         } catch (err) {
-            alert('Failed to generate preview');
+            toast.error('Failed to generate preview');
         }
     };
 
     const runAllocation = async () => {
-        if (!window.confirm(`Run allocation for ${semester}? This will assign students to rooms.`)) return;
-
-        try {
-            const res = await axios.post(`${API_URL}/api/allocation/run/`, { semester }, {
-                headers: getAuthHeader()
-            });
-            alert(res.data.message);
-            fetchData();
-            setPreview(null);
-        } catch (err) {
-            alert('Allocation failed: ' + (err.response?.data?.error || err.message));
-        }
+        modal.confirm(`Run allocation for ${semester}? This will assign students to rooms.`, async () => {
+            try {
+                const res = await axios.post(`${API_URL}/api/allocation/run/`, { semester }, {
+                    headers: getAuthHeader()
+                });
+                toast.success(res.data.message);
+                fetchData();
+                setPreview(null);
+            } catch (err) {
+                toast.error('Allocation failed: ' + (err.response?.data?.error || err.message));
+            }
+        });
     };
 
     const filteredAllocations = allocations.filter(a => {
