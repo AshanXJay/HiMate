@@ -2,10 +2,12 @@ import React, { useContext, useEffect } from 'react';
 import { AuthContext } from '../AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
+import { useToast } from '../components/Toast';
 
 const Login = () => {
     const { user, loginWithGoogle } = useContext(AuthContext);
     const navigate = useNavigate();
+    const toast = useToast();
 
     useEffect(() => {
         if (user) {
@@ -28,12 +30,12 @@ const Login = () => {
         } catch (error) {
             const errorMsg = error.response?.data?.error ||
                 'Login failed. Please ensure you are using a @std.uwu.ac.lk account.';
-            alert(errorMsg);
+            toast.error(errorMsg);
         }
     };
 
     const handleError = () => {
-        alert('Google Login Failed. Please try again.');
+        toast.error('Google Login Failed. Please try again.');
     };
 
     return (

@@ -2,12 +2,16 @@ import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { AuthContext } from '../AuthContext';
+import { useToast } from '../components/Toast';
+import { useModal } from '../components/Modal';
 
 const SurveyWizard = () => {
     const navigate = useNavigate();
     const { API_URL, getAuthHeader, refreshUserData } = useContext(AuthContext);
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
+    const toast = useToast();
+    const modal = useModal();
     const [formData, setFormData] = useState({
         wake_up_time: '08:00',
         requires_darkness: false,
@@ -33,7 +37,7 @@ const SurveyWizard = () => {
             } catch (hostelErr) {
                 if (hostelErr.response?.status === 403) {
                     const data = hostelErr.response.data;
-                    alert(`Not Eligible for Hostel:\n\n${data.reason}\n\nLevel: ${data.level}\nSemester: ${data.semester}`);
+                    modal.showInfo('Not Eligible for Hostel', `${data.reason}\n\nLevel: ${data.level}\nSemester: ${data.semester}`);
                 }
             }
 
@@ -41,10 +45,10 @@ const SurveyWizard = () => {
             navigate('/dashboard');
         } catch (error) {
             if (error.response?.status === 401) {
-                alert("Session expired. Please login again.");
+                toast.error('Session expired. Please login again.');
                 navigate('/login');
             } else {
-                alert('Error updating profile: ' + (error.response?.data?.detail || error.message));
+                toast.error('Error updating profile: ' + (error.response?.data?.detail || error.message));
             }
         } finally {
             setLoading(false);

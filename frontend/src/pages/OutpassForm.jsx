@@ -2,11 +2,13 @@ import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { AuthContext } from '../AuthContext';
+import { useToast } from '../components/Toast';
 
 const OutpassForm = () => {
     const navigate = useNavigate();
     const { API_URL, getAuthHeader } = useContext(AuthContext);
     const [loading, setLoading] = useState(false);
+    const toast = useToast();
     const [formData, setFormData] = useState({
         leave_date: '',
         return_date: '',
@@ -25,7 +27,7 @@ const OutpassForm = () => {
             await axios.post(`${API_URL}/api/requests/outpass/`, formData, {
                 headers: getAuthHeader()
             });
-            alert('Outpass request submitted!');
+            toast.success('Outpass request submitted!');
             navigate('/dashboard');
         } catch (err) {
             setError(err.response?.data?.detail || err.response?.data?.error || 'Failed to submit request');

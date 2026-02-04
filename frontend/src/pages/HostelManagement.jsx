@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { AuthContext } from '../AuthContext';
 import DashboardHeader from '../components/DashboardHeader';
+import { useToast } from '../components/Toast';
+import { useModal } from '../components/Modal';
 
 const HostelManagement = () => {
     const navigate = useNavigate();
@@ -11,6 +13,8 @@ const HostelManagement = () => {
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
     const [editingHostel, setEditingHostel] = useState(null);
+    const toast = useToast();
+    const modal = useModal();
     const [formData, setFormData] = useState({
         name: '',
         gender_type: 'MALE',
@@ -51,7 +55,7 @@ const HostelManagement = () => {
             resetForm();
             fetchHostels();
         } catch (err) {
-            alert('Failed to save hostel: ' + (err.response?.data?.detail || err.message));
+            toast.error('Failed to save hostel: ' + (err.response?.data?.detail || err.message));
         }
     };
 
@@ -70,29 +74,31 @@ const HostelManagement = () => {
     };
 
     const handleDelete = async (id) => {
-        if (!window.confirm('Are you sure you want to delete this hostel?')) return;
-        try {
-            await axios.delete(`${API_URL}/api/housing/hostels/${id}/`, { headers: getAuthHeader() });
-            fetchHostels();
-        } catch (err) {
-            alert('Failed to delete hostel');
-        }
+        modal.confirm('Are you sure you want to delete this hostel?', async () => {
+            try {
+                await axios.delete(`${API_URL}/api/housing/hostels/${id}/`, { headers: getAuthHeader() });
+                fetchHostels();
+                toast.success('Hostel deleted');
+            } catch (err) {
+                toast.error('Failed to delete hostel');
+            }
+        });
     };
 
     const handleGenerateRooms = async (hostelId) => {
-        const numRooms = prompt('How many rooms to generate?', '10');
-        if (!numRooms) return;
-
-        try {
-            await axios.post(`${API_URL}/api/housing/hostels/${hostelId}/generate_rooms/`, {
-                num_rooms: parseInt(numRooms),
-                beds_per_room: 4
-            }, { headers: getAuthHeader() });
-            alert('Rooms generated successfully!');
-            fetchHostels();
-        } catch (err) {
-            alert('Failed to generate rooms');
-        }
+        modal.promptInput('How many rooms to generate?', '10', async (numRooms) => {
+            if (!numRooms) return;
+            try {
+                await axios.post(`${API_URL}/api/housing/hostels/${hostelId}/generate_rooms/`, {
+                    num_rooms: parseInt(numRooms),
+                    beds_per_room: 4
+                }, { headers: getAuthHeader() });
+                toast.success('Rooms generated successfully!');
+                fetchHostels();
+            } catch (err) {
+                toast.error('Failed to generate rooms');
+            }
+        });
     };
 
     const resetForm = () => {

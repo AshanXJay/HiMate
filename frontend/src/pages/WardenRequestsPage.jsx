@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { AuthContext } from '../AuthContext';
 import DashboardHeader from '../components/DashboardHeader';
+import { useToast } from '../components/Toast';
 
 const WardenRequestsPage = () => {
     const { type } = useParams();
@@ -14,6 +15,7 @@ const WardenRequestsPage = () => {
     const [selectedRequest, setSelectedRequest] = useState(null);
     const [actionLoading, setActionLoading] = useState(false);
     const [notes, setNotes] = useState('');
+    const toast = useToast();
 
     useEffect(() => {
         fetchRequests();
@@ -52,14 +54,13 @@ const WardenRequestsPage = () => {
             let url, data;
             switch (type) {
                 case 'hostel':
-                    // For hostel, only rejection is allowed through this endpoint
                     if (action !== 'REJECTED') {
-                        alert('Only rejection is allowed. Allocation is handled automatically.');
+                        toast.warning('Only rejection is allowed. Allocation is handled automatically.');
                         setActionLoading(false);
                         return;
                     }
                     if (!notes.trim()) {
-                        alert('Rejection reason is required');
+                        toast.warning('Rejection reason is required');
                         setActionLoading(false);
                         return;
                     }
@@ -92,7 +93,7 @@ const WardenRequestsPage = () => {
             setNotes('');
             fetchRequests();
         } catch (err) {
-            alert(err.response?.data?.error || 'Action failed');
+            toast.error(err.response?.data?.error || 'Action failed');
         } finally {
             setActionLoading(false);
         }

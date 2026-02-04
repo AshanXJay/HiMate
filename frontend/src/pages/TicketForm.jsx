@@ -2,11 +2,13 @@ import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { AuthContext } from '../AuthContext';
+import { useToast } from '../components/Toast';
 
 const TicketForm = () => {
     const navigate = useNavigate();
     const { API_URL, getAuthHeader } = useContext(AuthContext);
     const [loading, setLoading] = useState(false);
+    const toast = useToast();
     const [formData, setFormData] = useState({
         category: 'OTHER',
         priority: 'MEDIUM',
@@ -42,7 +44,7 @@ const TicketForm = () => {
             await axios.post(`${API_URL}/api/operations/ticket/`, formData, {
                 headers: getAuthHeader()
             });
-            alert('Maintenance ticket submitted!');
+            toast.success('Maintenance ticket submitted!');
             navigate('/dashboard');
         } catch (err) {
             setError(err.response?.data?.detail || err.response?.data?.error || 'Failed to submit ticket');

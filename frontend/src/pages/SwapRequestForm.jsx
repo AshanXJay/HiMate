@@ -2,11 +2,13 @@ import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { AuthContext } from '../AuthContext';
+import { useToast } from '../components/Toast';
 
 const SwapRequestForm = () => {
     const navigate = useNavigate();
     const { API_URL, getAuthHeader } = useContext(AuthContext);
     const [loading, setLoading] = useState(false);
+    const toast = useToast();
     const [formData, setFormData] = useState({
         student_b_enrollment: '',
         reason: ''
@@ -22,7 +24,7 @@ const SwapRequestForm = () => {
             await axios.post(`${API_URL}/api/requests/swap/`, formData, {
                 headers: getAuthHeader()
             });
-            alert('Swap request submitted! Waiting for partner approval.');
+            toast.success('Swap request submitted! Waiting for partner approval.');
             navigate('/dashboard');
         } catch (err) {
             setError(err.response?.data?.student_b_enrollment?.[0] || err.response?.data?.error || 'Failed to submit request');

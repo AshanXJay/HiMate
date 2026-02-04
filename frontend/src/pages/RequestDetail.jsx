@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { AuthContext } from '../AuthContext';
+import { useToast } from '../components/Toast';
 
 const RequestDetail = () => {
     const { type, id } = useParams();
@@ -10,6 +11,7 @@ const RequestDetail = () => {
     const [request, setRequest] = useState(null);
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState(false);
+    const toast = useToast();
 
     useEffect(() => {
         fetchRequest();
@@ -35,7 +37,7 @@ const RequestDetail = () => {
             const res = await axios.get(url, { headers: getAuthHeader() });
             setRequest(res.data);
         } catch (err) {
-            alert('Request not found');
+            toast.error('Request not found');
             navigate('/dashboard');
         } finally {
             setLoading(false);
@@ -48,10 +50,10 @@ const RequestDetail = () => {
             await axios.post(`${API_URL}/api/requests/swap/${id}/respond/`, { agree }, {
                 headers: getAuthHeader()
             });
-            alert(agree ? 'Swap approved! Waiting for warden.' : 'Swap declined.');
+            toast.success(agree ? 'Swap approved! Waiting for warden.' : 'Swap declined.');
             fetchRequest();
         } catch (err) {
-            alert(err.response?.data?.error || 'Failed to respond');
+            toast.error(err.response?.data?.error || 'Failed to respond');
         } finally {
             setActionLoading(false);
         }
