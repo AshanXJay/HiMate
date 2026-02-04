@@ -1,49 +1,174 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
+import { AuthContext } from '../AuthContext';
+import StatCard from '../components/StatCard';
+import DashboardHeader from '../components/DashboardHeader';
+import { useToast } from '../components/Toast';
+import { useModal } from '../components/Modal';
 
 const WardenDashboard = () => {
-    const [stats, setStats] = useState({});
+    const { API_URL, getAuthHeader } = useContext(AuthContext);
+    const [stats, setStats] = useState(null);
+    const [pendingRequests, setPendingRequests] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const toast = useToast();
+    const modal = useModal();
 
     useEffect(() => {
-        const token = localStorage.getItem('access_token');
-        if (token) {
-            axios.get('http://127.0.0.1:8000/api/operations/dashboard/stats/', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-                .then(res => setStats(res.data))
-                .catch(err => console.error("Error fetching stats:", err));
-        }
+        fetchDashboardData();
     }, []);
 
-    return (
-        <div className="container">
-            <h1>Warden Dashboard</h1>
+    const fetchDashboardData = async () => {
+        try {
+            const [statsRes, requestsRes] = await Promise.all([
+                axios.get(`${API_URL}/api/operations/dashboard/stats/`, { headers: getAuthHeader() }),
+                axios.get(`${API_URL}/api/operations/dashboard/requests/`, { headers: getAuthHeader() })
+            ]);
+            setStats(statsRes.data);
+            setPendingRequests(requestsRes.data);
+        } catch (err) { } finally {
+            setLoading(false);
+        }
+    };
 
-            <div className="grid grid-cols-4" style={{ marginBottom: '20px' }}>
-                <div className="card text-center">
-                    <h3>Students</h3>
-                    <h2>{stats.total_students}</h2>
+    const runAllocation = async () => {
+        modal.confirm('Run smart allocation for all pending students?', async () => {
+            try {
+                const res = await axios.post(`${API_URL}/api/allocation/run/`, {
+                    semester: '2025/2026 - Semester 1'
+                }, { headers: getAuthHeader() });
+                toast.success(res.data.message);
+                fetchDashboardData();
+            } catch (err) {
+                toast.error('Allocation failed: ' + (err.response?.data?.error || err.message));
+            }
+        });
+    };
+
+    const resetAllocations = async () => {
+        const confirmMsg = 'Are you sure you want to reset ALL allocations?\n\n' +
+            'This will:\n• Clear all room assignments\n• Free all occupied beds\n• Reset hostel requests to pending\n\n' +
+            'Type "RESET" to confirm:';
+
+        modal.promptInput(confirmMsg, '', async (input) => {
+            if (input !== 'RESET') {
+                toast.warning('Reset cancelled. You must type "RESET" exactly.');
+                return;
+            }
+            try {
+                const res = await axios.post(`${API_URL}/api/allocation/reset/`, {
+                    semester: '2025/2026 - Semester 1',
+                    confirm: true
+                }, { headers: getAuthHeader() });
+                toast.success(`${res.data.message} - Allocations: ${res.data.allocations_cleared}, Beds freed: ${res.data.beds_freed}`);
+                fetchDashboardData();
+            } catch (err) {
+                toast.error('Reset failed: ' + (err.response?.data?.error || err.message));
+            }
+        });
+    };
+
+    if (loading) {
+        return <div className="container p-8" style={{ maxWidth: '1200px', margin: '0 auto' }}><p>Loading dashboard...</p></div>;
+    }
+
+    return (
+        <div className="container p-8" style={{ maxWidth: '1200px', margin: '0 auto' }}>
+            {/* Header with Navigation */}
+            <DashboardHeader
+                title="Warden Dashboard"
+                subtitle="Hostel Management System"
+                isWarden={true}
+            />
+
+            {/* Stats Grid */}
+            <div className="grid grid-cols-4 my-8">
+                <StatCard icon="👨‍🎓" value={stats?.students?.total || 0} label="Total Students" color="primary" />
+                <StatCard icon="✅" value={stats?.students?.allocated || 0} label="Allocated" color="success" />
+                <StatCard icon="⏳" value={stats?.students?.pending_allocation || 0} label="Pending" color="warning" />
+                <StatCard icon="🛏️" value={stats?.beds?.available || 0} label="Available Beds" color="default" />
+            </div>
+
+            {/* Occupancy Rate */}
+            <div className="card mb-4">
+                <h3 style={{ marginBottom: '1rem' }}>🏠 Occupancy Rate</h3>
+                <div style={{ height: '12px', background: 'var(--color-border)', borderRadius: '9999px', overflow: 'hidden', marginBottom: '0.5rem' }}>
+                    <div
+                        style={{
+                            height: '100%',
+                            background: 'linear-gradient(90deg, var(--color-success), var(--color-warning))',
+                            width: `${stats?.beds?.occupancy_rate || 0}%`,
+                            borderRadius: '9999px'
+                        }}
+                    />
                 </div>
-                <div className="card text-center">
-                    <h3>Allocated</h3>
-                    <h2>{stats.allocated_students}</h2>
-                </div>
-                <div className="card text-center">
-                    <h3>Free Rooms</h3>
-                    <h2>{stats.available_rooms}</h2>
-                </div>
-                <div className="card text-center">
-                    <h3>Issues</h3>
-                    <h2>{stats.maintenance_issues}</h2>
+                <p style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)', margin: 0 }}>
+                    {stats?.beds?.occupied || 0} / {stats?.beds?.total || 0} beds occupied ({stats?.beds?.occupancy_rate || 0}%)
+                </p>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="card mb-4">
+                <h3 style={{ marginBottom: '1rem' }}>⚡ Quick Actions</h3>
+                <div className="grid grid-cols-4 gap-4">
+                    <button onClick={runAllocation} className="btn btn-primary">
+                        🧠 Run Smart Allocation
+                    </button>
+                    <Link to="/admin/allocation" className="btn btn-secondary">
+                        👁️ View Allocations
+                    </Link>
+                    <Link to="/admin/hostels" className="btn btn-secondary">
+                        🏨 Manage Hostels
+                    </Link>
+                    <button
+                        onClick={resetAllocations}
+                        className="btn"
+                        style={{
+                            background: 'transparent',
+                            border: '1px solid var(--color-error)',
+                            color: 'var(--color-error)'
+                        }}
+                    >
+                        🔄 Reset Semester
+                    </button>
                 </div>
             </div>
 
+            {/* Pending Summary */}
             <div className="card">
-                <h3>Admin Actions</h3>
-                <div className="grid grid-cols-2">
-                    <Link to="/admin/allocation" className="btn btn-primary">Go to Allocation</Link>
-                    <Link to="/rooms" className="btn btn-secondary">View Rooms</Link>
+                <h3 style={{ marginBottom: '1.5rem' }}>📋 Pending Requests</h3>
+                <div className="grid grid-cols-4 gap-4 mb-4">
+                    <div className="text-center p-4" style={{ background: 'var(--color-bg)', borderRadius: 'var(--radius-md)' }}>
+                        <span style={{ display: 'block', fontSize: '1.5rem', fontWeight: '700', color: 'var(--color-primary)' }}>
+                            {stats?.requests?.pending_hostel || 0}
+                        </span>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>Hostel Requests</span>
+                    </div>
+                    <div className="text-center p-4" style={{ background: 'var(--color-bg)', borderRadius: 'var(--radius-md)' }}>
+                        <span style={{ display: 'block', fontSize: '1.5rem', fontWeight: '700', color: 'var(--color-primary)' }}>
+                            {stats?.requests?.pending_swaps || 0}
+                        </span>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>Swap Requests</span>
+                    </div>
+                    <div className="text-center p-4" style={{ background: 'var(--color-bg)', borderRadius: 'var(--radius-md)' }}>
+                        <span style={{ display: 'block', fontSize: '1.5rem', fontWeight: '700', color: 'var(--color-primary)' }}>
+                            {stats?.requests?.pending_outpasses || 0}
+                        </span>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>Outpasses</span>
+                    </div>
+                    <div className="text-center p-4" style={{ background: 'var(--color-bg)', borderRadius: 'var(--radius-md)' }}>
+                        <span style={{ display: 'block', fontSize: '1.5rem', fontWeight: '700', color: 'var(--color-primary)' }}>
+                            {stats?.tickets?.total_active || 0}
+                        </span>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>Open Tickets</span>
+                    </div>
+                </div>
+                <div className="flex gap-4" style={{ flexWrap: 'wrap' }}>
+                    <Link to="/admin/requests/hostel" className="btn btn-primary" style={{ padding: '0.75rem 1.5rem' }}>View Hostel Requests</Link>
+                    <Link to="/admin/requests/swaps" className="btn btn-secondary" style={{ padding: '0.75rem 1.5rem' }}>View Swaps</Link>
+                    <Link to="/admin/requests/outpasses" className="btn btn-secondary" style={{ padding: '0.75rem 1.5rem' }}>View Outpasses</Link>
+                    <Link to="/admin/requests/tickets" className="btn btn-secondary" style={{ padding: '0.75rem 1.5rem' }}>View Tickets</Link>
                 </div>
             </div>
         </div>

@@ -27,7 +27,8 @@ class CustomUser(AbstractUser):
 class StudentProfile(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='profile')
     full_name = models.CharField(max_length=200, blank=True)
-    enrollment_number = models.CharField(max_length=50, blank=True, unique=True)
+    enrollment_number = models.CharField(max_length=50, unique=True)
+    batch = models.CharField(max_length=10, blank=True)
     
     # Survey Data
     wake_up_time = models.TimeField(null=True, blank=True)
@@ -42,20 +43,32 @@ class StudentProfile(models.Model):
 @receiver(post_save, sender=CustomUser)
 def create_student_profile(sender, instance, created, **kwargs):
     if created and instance.role == CustomUser.Role.STUDENT:
-        # Generic parsing logic
-        # Email format: degYrNum@std.uwu.ac.lk -> cst21045@std.uwu.ac.lk
+        # Check if profile already exists
+        if StudentProfile.objects.filter(user=instance).exists():
+            return
+            
         email = instance.email
-        profile = StudentProfile.objects.create(user=instance)
+        enrollment = None
+        batch = ''
         
-        # Regex to parse UWU email
-        match = re.search(r'^([a-zA-Z]{3,4})(\d{2})(\d{3})@std\.uwu\.ac\.lk$', email)
+        # Try to parse UWU email format: degYrNum@std.uwu.ac.lk
+        match = re.search(r'^([a-zA-Z]{2,4})(\d{2})(\d{3})@std\.uwu\.ac\.lk$', email)
         if match:
             deg = match.group(1).upper()
             yr = match.group(2)
             num = match.group(3)
-            # Format: UWU/DEG/YR/NUM
             enrollment = f"UWU/{deg}/{yr}/{num}"
-            profile.enrollment_number = enrollment
-            profile.full_name = instance.username # Default to username if no name
-            profile.save()
-            print(f"Generated Enrollment: {enrollment}")
+            batch = yr
+        else:
+            # Fallback: Generate from user ID and email
+            import uuid
+            short_id = str(uuid.uuid4())[:8].upper()
+            enrollment = f"UWU/GEN/{short_id}"
+        
+        StudentProfile.objects.create(
+            user=instance,
+            enrollment_number=enrollment,
+            full_name=instance.get_full_name() or instance.username,
+            batch=batch
+        )
+

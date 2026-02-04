@@ -1,101 +1,205 @@
-# HiMate 🤝
-### University Room Allocation Portal
+# HiMate - Smart Hostel Allocation System
 
-HiMate is a full-stack web application designed for **Uva Wellassa University** to automate the hostel room allocation process. It matches students based on their **preferences** (Sleep schedule, Cleanliness, Social habits) to ensure compatible roommates.
+A comprehensive hostel management and roommate matching system for Uva Wellassa University. HiMate uses a sophisticated 3-tier algorithm to match students with compatible roommates based on their lifestyle preferences.
 
-## 🚀 Features
-*   **Google Sign-In**: Secure access using University Email (`@std.uwu.ac.lk`).
-*   **Role-Based Access**:
-    *   **Students**: View room details, fill survey, request swaps.
-    *   **Wardens (Admin)**: View dashboard stats, trigger auto-allocation, manage rooms.
-*   **Smart Allocation Algorithm**: Automatically pairs students with similar habits.
-*   **Dark Mode UI**: Premium AMOLED Black & Orange aesthetic.
+## 🎯 Features
 
-## 🛠️ Tech Stack
-*   **Frontend**: React (Create React App), Vanilla CSS
-*   **Backend**: Django Rest Framework (DRF)
-*   **Database**: MySQL
-*   **Auth**: Google OAuth 2.0 + JWT
+### Student Features
+- **Google OAuth Login** - Secure authentication using university email (@std.uwu.ac.lk)
+- **Preference Survey** - Multi-step wizard to collect compatibility preferences
+- **Room Allocation** - View assigned room, bed, and roommate details
+- **Location Map** - View hostel location on Google Maps
+- **Swap Requests** - Request to swap rooms with another student (requires partner approval)
+- **Outpass Requests** - Request permission to leave hostel with verification code
+- **Maintenance Tickets** - Report room issues with category and priority
 
-## 📦 Installation & Setup
+### Warden Features
+- **Dashboard Overview** - Stats on students, occupancy, pending requests
+- **Smart Allocation** - Run 3-tier algorithm to match compatible students
+- **Hostel Management** - CRUD operations for hostels and rooms
+- **Request Management** - Approve/reject swaps, outpasses, and tickets
+- **Room Grid View** - Visual overview of room occupancy status
 
-### Prerequisites
-*   Python 3.10+
-*   Node.js & npm
-*   MySQL Server (installed & running)
+## 🧠 Algorithm
 
-### 1. Database Setup
-Log in to your MySQL server and create the database:
-```sql
-CREATE DATABASE himate_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+HiMate implements a **Three-Tier Matching System**:
+
+1. **Tier 1 - Biological Filter (Hard Constraints)**
+   - Chronotype matching (wake time < 2 hours difference)
+   - Light sensitivity compatibility
+
+2. **Tier 2 - Behavioral Score (Weighted Euclidean Distance)**
+   - Cleanliness preferences (weight: 3.0)
+   - Guest tolerance (weight: 2.0)
+
+3. **Tier 3 - Social Balance (Complementarity)**
+   - Dominance scoring to avoid alpha-alpha conflicts
+   - Personality complementarity bonuses
+
+## 🏗️ Tech Stack
+
+### Backend
+- **Django 5.2** - Web framework
+- **Django REST Framework** - API development
+- **PostgreSQL/SQLite** - Database
+- **Simple JWT** - Authentication
+- **Google OAuth** - Social login
+
+### Frontend
+- **React 19** - UI framework
+- **React Router** - Navigation
+- **Axios** - HTTP client
+- **Google OAuth** - Authentication
+
+## 📁 Project Structure
+
+```
+HiMate/
+├── backend/
+│   ├── core/              # Django settings
+│   ├── users/             # User authentication & profiles
+│   ├── housing/           # Hostels, rooms, beds
+│   ├── allocation/        # Room allocation algorithm
+│   ├── student_requests/  # Swaps, outpasses, status tracking
+│   └── operations/        # Maintenance tickets, dashboard
+├── frontend/
+│   ├── src/
+│   │   ├── components/    # Reusable components
+│   │   ├── pages/         # Page components
+│   │   ├── AuthContext.jsx
+│   │   └── App.jsx
+│   └── public/
+└── README.md
 ```
 
-### 2. Backend (Django)
+## 🚀 Getting Started
+
+### Prerequisites
+- Python 3.10+
+- Node.js 18+
+- npm or yarn
+
+### Backend Setup
+
 ```bash
 cd backend
-python -m venv venv
-venv\Scripts\activate  # Windows
-# source venv/bin/activate  # Mac/Linux
 
+# Create virtual environment
+python -m venv venv
+.\venv\Scripts\activate  # Windows
+source venv/bin/activate  # Linux/Mac
+
+# Install dependencies
 pip install -r requirements.txt
 
-# Configure Environment
+# Configure environment
 cp .env.example .env
-# Edit .env with your MySQL credentials, Google Client ID, and Warden Email
+# Edit .env with your settings
 
-# Run Migrations
+# Run migrations
 python manage.py migrate
 
-# Create Superuser
-python manage.py createsuperuser
-
-# Start Server
+# Run server
 python manage.py runserver
 ```
 
-### 3. Frontend (React)
+### Frontend Setup
+
 ```bash
 cd frontend
+
+# Install dependencies
 npm install
 
-# Configure Environment
-cp .env.example .env
-# Edit .env and paste your Google Client ID (Must match backend)
+# Configure environment
+# Create .env file with:
+REACT_APP_GOOGLE_CLIENT_ID=your_google_client_id
+REACT_APP_API_URL=http://127.0.0.1:8000
 
+# Run development server
 npm start
 ```
 
-## 🛢️ Database Management & Migrations
-### How to Add a New Column (Example)
-1.  **Edit Models**: Open `backend/users/models.py` (or any app) and add your field:
-    ```python
-    phone_number = models.CharField(max_length=15, null=True, blank=True)
-    ```
-2.  **Generate Migration**:
-    ```bash
-    python manage.py makemigrations
-    ```
-    *This creates a new file, e.g., `0002_add_phone_number.py`, describing the change.*
-3.  **Apply to DB**:
-    ```bash
-    python manage.py migrate
-    ```
-    *This executes the `ALTER TABLE` SQL command.*
+## 🔧 Environment Variables
 
-1.  **Make Migrations**: Tells Django what changed.
-    ```bash
-    cd backend
-    python manage.py makemigrations
-    ```
-2.  **Apply Migrations**: Updates the MySQL database.
-    ```bash
-    python manage.py migrate
-    ```
+### Backend (.env)
+```
+SECRET_KEY=your-django-secret-key
+DEBUG=True
+GOOGLE_CLIENT_ID=your-google-client-id
+WARDEN_EMAIL=warden@example.com
+ALLOWED_HOSTS=localhost,127.0.0.1
+CORS_ALLOWED_ORIGINS=http://localhost:3000
+```
 
-## 📖 Documentation
-Detailed structure guides are available in the `docs/` folder:
-*   [Backend Structure](docs/Backend_Structure.md)
-*   [Frontend Structure](docs/Frontend_Structure.md)
+### Frontend (.env)
+```
+REACT_APP_GOOGLE_CLIENT_ID=your-google-client-id
+REACT_APP_API_URL=http://127.0.0.1:8000
+```
+
+## 📋 API Endpoints
+
+### Authentication
+- `POST /api/auth/google/` - Google OAuth login
+
+### Users
+- `GET /api/me/` - Get current user data
+- `PATCH /api/profile/update/` - Update profile
+
+### Housing
+- `GET /api/housing/hostels/` - List hostels
+- `POST /api/housing/hostels/{id}/generate_rooms/` - Generate rooms
+- `GET /api/housing/rooms/?hostel={id}` - List rooms
+
+### Allocation
+- `POST /api/allocation/run/` - Run smart allocation
+- `GET /api/allocation/preview/` - Preview allocation
+- `GET /api/allocation/my-room/` - Get student's room
+- `GET /api/allocation/stats/` - Get statistics
+
+### Requests
+- `POST /api/requests/swap/` - Create swap request
+- `POST /api/requests/swap/{id}/respond/` - Partner response
+- `POST /api/requests/swap/{id}/approve/` - Warden approval
+- `POST /api/requests/outpass/` - Create outpass
+- `POST /api/requests/outpass/{id}/approve/` - Approve outpass
+- `GET /api/requests/outpass/verify/{code}/` - Verify outpass
+
+### Operations
+- `POST /api/operations/ticket/` - Create ticket
+- `GET /api/operations/dashboard/stats/` - Dashboard stats
+- `GET /api/operations/dashboard/requests/` - Pending requests
+
+## 📱 Pages
+
+### Student Pages
+- `/login` - Google OAuth login
+- `/dashboard` - Student dashboard
+- `/survey` - Preference wizard
+- `/request/swap` - Swap request form
+- `/request/outpass` - Outpass request form
+- `/request/ticket` - Maintenance ticket form
+- `/request/:type/:id` - Request detail view
+- `/rooms` - Room grid view
+
+### Warden Pages
+- `/admin/dashboard` - Warden dashboard
+- `/admin/allocation` - Allocation control
+- `/admin/hostels` - Hostel management
+- `/admin/requests/:type` - Request management
+
+## 🔐 User Roles
+
+| Role | Access |
+|------|--------|
+| `STUDENT` | Personal dashboard, requests, profile |
+| `WARDEN` | Full admin access, allocation, approvals |
 
 ## 📄 License
-This project is licensed under the [GNU GPLv3 License](LICENSE).
+
+This project is developed for Uva Wellassa University.
+
+## 👥 Contributors
+
+- Development team for ICT Department

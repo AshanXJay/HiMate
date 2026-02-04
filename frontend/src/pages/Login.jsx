@@ -1,62 +1,108 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { AuthContext } from '../AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
+import { useToast } from '../components/Toast';
 
 const Login = () => {
-    const { loginWithGoogle } = useContext(AuthContext);
+    const { user, loginWithGoogle } = useContext(AuthContext);
     const navigate = useNavigate();
+    const toast = useToast();
+
+    useEffect(() => {
+        if (user) {
+            if (user.role === 'WARDEN') {
+                navigate('/admin/dashboard');
+            } else {
+                navigate('/dashboard');
+            }
+        }
+    }, [user, navigate]);
 
     const handleSuccess = async (credentialResponse) => {
         try {
-            await loginWithGoogle(credentialResponse);
-            navigate('/dashboard');
+            const userData = await loginWithGoogle(credentialResponse);
+            if (userData.role === 'WARDEN') {
+                navigate('/admin/dashboard');
+            } else {
+                navigate('/dashboard');
+            }
         } catch (error) {
-            alert('Login failed. Please ensure you are using a @std.uwu.ac.lk account.');
+            const errorMsg = error.response?.data?.error ||
+                'Login failed. Please ensure you are using a @std.uwu.ac.lk account.';
+            toast.error(errorMsg);
         }
     };
 
     const handleError = () => {
-        alert('Google Login Failed');
+        toast.error('Google Login Failed. Please try again.');
     };
 
     return (
-        <div className="flex items-center justify-center w-full h-screen relative overflow-hidden bg-black">
+        <div className="flex items-center justify-center w-full h-screen relative overflow-hidden" style={{ background: 'black' }}>
+            {/* Ambient Background */}
+            <div style={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                width: '600px',
+                height: '600px',
+                background: 'var(--color-primary)',
+                opacity: 0.1,
+                borderRadius: '50%',
+                filter: 'blur(120px)',
+                pointerEvents: 'none'
+            }}></div>
 
-            {/* Ambient Background Elements */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary opacity-10 rounded-full blur-[120px] pointer-events-none"></div>
+            <div className="card relative z-10" style={{
+                maxWidth: '400px',
+                width: '100%',
+                textAlign: 'center',
+                background: 'rgba(10, 10, 10, 0.9)',
+                backdropFilter: 'blur(16px)'
+            }}>
+                <div style={{
+                    width: '64px',
+                    height: '64px',
+                    background: 'var(--color-surface-hover)',
+                    borderRadius: 'var(--radius-lg)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    margin: '0 auto 1.5rem',
+                    fontSize: '2rem',
+                    border: '1px solid rgba(255,255,255,0.05)'
+                }}>
+                    🏛️
+                </div>
 
-            <div className="card relative z-10 p-10 w-full max-w-md border border-neutral-800 bg-[#0a0a0a]/90 backdrop-blur-xl shadow-2xl">
-                <div className="text-center">
-                    <div className="mx-auto w-16 h-16 bg-surface-hover rounded-2xl flex items-center justify-center mb-6 shadow-gl border border-white/5 text-3xl">
-                        🏛️
-                    </div>
+                <h1 style={{ fontSize: '1.875rem', marginBottom: '0.5rem', letterSpacing: '-0.02em' }}>HiMate Portal</h1>
+                <p style={{ fontSize: '0.875rem', marginBottom: '2rem' }}>
+                    The Official Residence Allocation System for<br />
+                    <span style={{ color: 'white', fontWeight: '500' }}>Uva Wellassa University</span>
+                </p>
 
-                    <h1 className="text-3xl font-bold text-white mb-2 tracking-tight">HiMate Portal</h1>
-                    <p className="text-muted text-sm mb-8">
-                        The Official Residence Allocation System for <br />
-                        <span className="text-white font-medium">Uva Wellassa University</span>
+                <div className="flex justify-center mb-4" style={{ transform: 'scale(1.05)', transition: 'transform 0.3s' }}>
+                    <GoogleLogin
+                        onSuccess={handleSuccess}
+                        onError={handleError}
+                        useOneTap
+                        shape="pill"
+                        theme="filled_black"
+                        size="large"
+                        text="continue_with"
+                        width="250"
+                    />
+                </div>
+
+                <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '1.5rem', marginTop: '1.5rem' }}>
+                    <p style={{ fontSize: '0.75rem' }}>
+                        Authorized Access Only.
+                        <span style={{ display: 'block', marginTop: '0.25rem', opacity: 0.5 }}>
+                            Please use your university email (@std.uwu.ac.lk)
+                        </span>
                     </p>
-
-                    <div className="flex justify-center mb-8 transform hover:scale-105 transition-transform duration-300">
-                        <GoogleLogin
-                            onSuccess={handleSuccess}
-                            onError={handleError}
-                            useOneTap
-                            shape="pill"
-                            theme="filled_black"
-                            size="large"
-                            text="continue_with"
-                            width="250"
-                        />
-                    </div>
-
-                    <div className="border-t border-white/5 pt-6">
-                        <p className="text-xs text-muted">
-                            Authorized Access Only.
-                            <span className="block mt-1 opacity-50">Please use your university email (@std.uwu.ac.lk)</span>
-                        </p>
-                    </div>
                 </div>
             </div>
         </div>

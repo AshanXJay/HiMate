@@ -1,11 +1,7 @@
 /* AMOLED Black & Orange Theme - HiMate */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
 
-/* Fallback / Explicit Utilities if Tailwind fails or is stripped */
+/* Utility Classes */
 .h-screen {
     height: 100vh;
 }
@@ -292,7 +288,7 @@ a:hover {
 }
 
 .card:hover {
-    transform: translateY(-4px);
+
     border-color: var(--color-primary);
     box-shadow: var(--shadow-gl);
 }
