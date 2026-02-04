@@ -29,6 +29,8 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-fallback-dev-key')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
+SILENCED_SYSTEM_CHECKS = ['mysql.E001']
+
 ALLOWED_HOSTS = []
 
 
@@ -89,7 +91,7 @@ WSGI_APPLICATION = 'core.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
+        'ENGINE': 'mysql.connector.django',
         'NAME': os.getenv('DB_NAME'),
         'USER': os.getenv('DB_USER'),
         'PASSWORD': os.getenv('DB_PASSWORD'),

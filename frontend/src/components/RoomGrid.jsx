@@ -59,15 +59,16 @@ const RoomGrid = () => {
     return (
         <div className="container p-8">
             <div className="flex justify-between items-center mb-4">
-                <div className="flex items-center gap-4">
+                <div className="flex items-center">
                     <button className="btn btn-secondary" style={{ padding: '0.5rem 1rem' }} onClick={() => navigate(-1)}>
                         ← Back
                     </button>
+                    <div style={{ width: '1px', height: '24px', background: 'var(--color-border)', margin: '0 12px' }}></div>
                     <h1 style={{ margin: 0 }}>🚪 Room Overview</h1>
                 </div>
                 <select
                     className="input-field"
-                    style={{ width: 'auto' }}
+                    style={{ width: 'auto', marginLeft: '1rem' }}
                     value={selectedHostel}
                     onChange={e => setSelectedHostel(e.target.value)}
                 >

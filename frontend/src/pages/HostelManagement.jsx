@@ -13,6 +13,16 @@ const HostelManagement = () => {
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
     const [editingHostel, setEditingHostel] = useState(null);
+
+    // Room Generation State
+    const [showGenerateModal, setShowGenerateModal] = useState(false);
+    const [generateStep, setGenerateStep] = useState(1);
+    const [selectedHostelId, setSelectedHostelId] = useState(null);
+    const [generateData, setGenerateData] = useState({
+        num_floors: '',
+        floors: [] // Array of { floor_number, room_count, beds_per_room }
+    });
+
     const toast = useToast();
     const modal = useModal();
     const [formData, setFormData] = useState({
@@ -85,20 +95,28 @@ const HostelManagement = () => {
         });
     };
 
-    const handleGenerateRooms = async (hostelId) => {
-        modal.promptInput('How many rooms to generate?', '10', async (numRooms) => {
-            if (!numRooms) return;
-            try {
-                await axios.post(`${API_URL}/api/housing/hostels/${hostelId}/generate_rooms/`, {
-                    num_rooms: parseInt(numRooms),
-                    beds_per_room: 4
-                }, { headers: getAuthHeader() });
-                toast.success('Rooms generated successfully!');
-                fetchHostels();
-            } catch (err) {
-                toast.error('Failed to generate rooms');
-            }
+    const handleGenerateRooms = (hostelId) => {
+        setSelectedHostelId(hostelId);
+        setGenerateData({
+            num_floors: '',
+            floors: []
         });
+        setGenerateStep(1);
+        setShowGenerateModal(true);
+    };
+
+    const handleGenerateSubmit = async () => {
+        try {
+            await axios.post(`${API_URL}/api/housing/hostels/${selectedHostelId}/generate_rooms/`,
+                generateData.floors,
+                { headers: getAuthHeader() }
+            );
+            toast.success('Rooms generated successfully!');
+            fetchHostels();
+            setShowGenerateModal(false);
+        } catch (err) {
+            toast.error('Failed to generate rooms: ' + (err.response?.data?.error || err.message));
+        }
     };
 
     const resetForm = () => {
@@ -225,6 +243,116 @@ const HostelManagement = () => {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Room Generation Wizard Modal */}
+            {showGenerateModal && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0, left: 0, right: 0, bottom: 0,
+                    background: 'rgba(0,0,0,0.8)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 1000,
+                    padding: '2rem'
+                }}>
+                    <div className="card" style={{ maxWidth: '600px', width: '100%', maxHeight: '90vh', overflowY: 'auto' }}>
+                        <h2 style={{ marginBottom: '1.5rem' }}>Generate Rooms - Step {generateStep} of 2</h2>
+
+                        {generateStep === 1 ? (
+                            <div className="form-group">
+                                <label>How many floors?</label>
+                                <input
+                                    type="number"
+                                    className="input-field"
+                                    min="1"
+                                    value={generateData.num_floors}
+                                    onChange={e => {
+                                        const count = parseInt(e.target.value) || 0;
+                                        setGenerateData({
+                                            ...generateData,
+                                            num_floors: e.target.value,
+                                            floors: Array(count).fill(0).map((_, i) => ({
+                                                floor_number: i + 1,
+                                                room_count: 5,
+                                                beds_per_room: 2
+                                            }))
+                                        });
+                                    }}
+                                    placeholder="Enter total floors"
+                                />
+                            </div>
+                        ) : (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                <p style={{ color: 'var(--color-text-muted)' }}>Configure rooms for each floor:</p>
+                                {generateData.floors.map((floor, index) => (
+                                    <div key={index} style={{
+                                        padding: '1rem',
+                                        background: 'var(--color-bg-secondary)',
+                                        borderRadius: 'var(--radius-sm)',
+                                        border: '1px solid var(--color-border)'
+                                    }}>
+                                        <h4 style={{ margin: '0 0 0.5rem 0' }}>Floor {floor.floor_number}</h4>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="form-group" style={{ margin: 0 }}>
+                                                <label style={{ fontSize: '0.8rem' }}>Rooms</label>
+                                                <input
+                                                    type="number"
+                                                    className="input-field"
+                                                    value={floor.room_count}
+                                                    onChange={e => {
+                                                        const newFloors = [...generateData.floors];
+                                                        newFloors[index].room_count = parseInt(e.target.value) || 0;
+                                                        setGenerateData({ ...generateData, floors: newFloors });
+                                                    }}
+                                                />
+                                            </div>
+                                            <div className="form-group" style={{ margin: 0 }}>
+                                                <label style={{ fontSize: '0.8rem' }}>Beds/Room</label>
+                                                <input
+                                                    type="number"
+                                                    className="input-field"
+                                                    value={floor.beds_per_room}
+                                                    onChange={e => {
+                                                        const newFloors = [...generateData.floors];
+                                                        newFloors[index].beds_per_room = parseInt(e.target.value) || 0;
+                                                        setGenerateData({ ...generateData, floors: newFloors });
+                                                    }}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        <div className="flex justify-between" style={{ paddingTop: '1.5rem', marginTop: '1rem', borderTop: '1px solid var(--color-border)' }}>
+                            <button
+                                className="btn btn-secondary"
+                                onClick={() => {
+                                    if (generateStep === 1) setShowGenerateModal(false);
+                                    else setGenerateStep(1);
+                                }}
+                            >
+                                {generateStep === 1 ? 'Cancel' : 'Back'}
+                            </button>
+                            <button
+                                className="btn btn-primary"
+                                onClick={() => {
+                                    if (generateStep === 1) {
+                                        if (generateData.num_floors > 0) setGenerateStep(2);
+                                        else toast.error("Please enter number of floors");
+                                    } else {
+                                        handleGenerateSubmit();
+                                    }
+                                }}
+                            >
+                                {generateStep === 1 ? 'Next' : 'Generate Rooms'}
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
