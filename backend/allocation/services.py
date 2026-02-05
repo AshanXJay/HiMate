@@ -1,13 +1,3 @@
-"""
-HiMate Roommate Compatibility Algorithm
-Based on: Algorithmic Methodology for Dyadic Roommate Compatibility
-
-Three-Tier Matching System:
-1. Tier 1 - Biological Filter (Hard Constraints): Chronotype & Light Sensitivity
-2. Tier 2 - Behavioral Score (Weighted Euclidean Distance): Cleanliness & Guest Tolerance
-3. Tier 3 - Social Balance (Complementarity): Dominance scoring
-"""
-
 from users.models import StudentProfile, CustomUser
 from housing.models import Room, Bed, Hostel
 from allocation.models import Allocation
@@ -19,7 +9,7 @@ import math
 import re
 
 # Algorithm Weights (from methodology)
-WEIGHT_CLEANLINESS = 3.0  # Critical Priority
+WEIGHT_CLEANLINESS = 3.0 
 WEIGHT_GUEST_TOLERANCE = 2.0
 WEIGHT_DOMINANCE = 1.5
 
@@ -31,7 +21,7 @@ DOMINANCE_PENALTY = 15  # Penalty for two dominant personalities
 def parse_time_to_hours(time_obj):
     """Convert time object to hours (0-24 scale)"""
     if time_obj is None:
-        return 8.0  # Default to 8 AM
+        return 6.0 
     return time_obj.hour + time_obj.minute / 60.0
 
 def get_student_batch(user):
@@ -43,15 +33,6 @@ def get_student_batch(user):
     return None
 
 def tier1_biological_filter(profile_a, profile_b):
-    """
-    Tier 1: Hard Constraints - Biological Filter
-    
-    Rules:
-    1. Sleep time difference must be <= 2 hours
-    2. Light-sensitive student cannot be paired with light user
-    
-    Returns: True if compatible, False if incompatible
-    """
     # Check chronotype compatibility (sleep schedule)
     time_a = parse_time_to_hours(profile_a.wake_up_time)
     time_b = parse_time_to_hours(profile_b.wake_up_time)
@@ -61,26 +42,18 @@ def tier1_biological_filter(profile_a, profile_b):
         return False
     
     # Check light sensitivity (photophobia)
-    # One requires darkness, other is a late-night light user
-    # For simplicity: if both have opposite preferences, reject
     if profile_a.requires_darkness and not profile_b.requires_darkness:
-        # A needs darkness, B might use light - risky but not absolute reject
-        pass  # We'll handle this in tier 2 with penalty
+        pass 
     
     if profile_b.requires_darkness and not profile_a.requires_darkness:
-        # B needs darkness, A might use light - risky but not absolute reject
         pass
     
-    # If both require darkness or both don't, they're compatible
     return True
 
 def tier2_behavioral_score(profile_a, profile_b):
     """
-    Tier 2: Behavioral Score using Weighted Euclidean Distance
-    
-    Formula: D = sqrt(W_clean*(A_clean - B_clean)² + W_guest*(A_guest - B_guest)²)
-    
-    Lower score = Better compatibility
+    Weighted Euclidean Distance
+    D = sqrt(W_clean*(A_clean - B_clean)² + W_guest*(A_guest - B_guest)²)
     """
     clean_diff = profile_a.cleanliness - profile_b.cleanliness
     guest_diff = profile_a.guest_tolerance - profile_b.guest_tolerance
@@ -92,16 +65,11 @@ def tier2_behavioral_score(profile_a, profile_b):
     
     # Add penalty for light sensitivity mismatch
     if profile_a.requires_darkness != profile_b.requires_darkness:
-        distance += 5.0  # Soft penalty for light mismatch
+        distance += 5.0
     
     return distance
 
 def tier3_social_adjustment(profile_a, profile_b, base_score):
-    """
-    Tier 3: Social Balance - Dominance Complementarity
-    
-    Penalizes pairing of two dominant personalities (alpha-alpha conflict)
-    """
     dominance_sum = profile_a.dominance + profile_b.dominance
     
     # Penalize two alphas (high dominance sum)
@@ -111,20 +79,16 @@ def tier3_social_adjustment(profile_a, profile_b, base_score):
     # Slight reward for complementary pairs (one high, one low)
     dominance_diff = abs(profile_a.dominance - profile_b.dominance)
     if dominance_diff >= 2:
-        return base_score - 2.0  # Small bonus for complementarity
+        return base_score - 2.0 
     
     return base_score
 
 def calculate_compatibility(student_a, student_b):
-    """
-    Main compatibility calculation function
-    Returns: compatibility score (lower = better), or None if incompatible
-    """
     try:
         profile_a = student_a.profile
         profile_b = student_b.profile
     except StudentProfile.DoesNotExist:
-        return None  # Can't compare without profiles
+        return None  
     
     # Tier 1: Hard constraints
     if not tier1_biological_filter(profile_a, profile_b):
@@ -139,10 +103,6 @@ def calculate_compatibility(student_a, student_b):
     return final_score
 
 def find_best_matches(students, max_per_group=4):
-    """
-    Find optimal roommate groups from a list of students
-    Returns list of student groups (each group shares a room)
-    """
     if len(students) < 2:
         return [[s] for s in students]
     
@@ -208,11 +168,6 @@ def find_best_matches(students, max_per_group=4):
     return groups
 
 def get_eligible_students(semester, gender=None, batch=None):
-    """
-    Get students eligible for allocation.
-    Only students with PENDING hostel requests are eligible.
-    Students with REJECTED requests are NOT eligible.
-    """
     from student_requests.models import HostelRequest, HostelRequestStatus
     
     # Get students who have a pending hostel request
@@ -224,7 +179,7 @@ def get_eligible_students(semester, gender=None, batch=None):
         role=CustomUser.Role.STUDENT,
         allocation__isnull=True,
         is_profile_complete=True,
-        id__in=pending_request_students  # Only students with pending requests
+        id__in=pending_request_students
     )
     
     if gender:
@@ -232,13 +187,11 @@ def get_eligible_students(semester, gender=None, batch=None):
     
     # Filter by batch if specified
     if batch:
-        # Batch is in email: e.g., cst22001 for batch 22
         queryset = queryset.filter(email__regex=rf'^[a-zA-Z]{{3,4}}{batch}\d{{3}}@std\.uwu\.ac\.lk$')
     
     return queryset
 
 def get_suitable_hostel(student, semester):
-    """Find suitable hostel for a student based on gender and batch"""
     batch = get_student_batch(student)
     gender = student.gender
     
@@ -254,7 +207,6 @@ def get_suitable_hostel(student, semester):
     return hostels.first()
 
 def allocate_group_to_room(group, room, semester):
-    """Allocate a group of students to available beds in a room"""
     from student_requests.models import HostelRequest, HostelRequestStatus
     
     available_beds = Bed.objects.filter(room=room, is_occupied=False)[:len(group)]
@@ -280,11 +232,7 @@ def allocate_group_to_room(group, room, semester):
     room.update_occupancy()
     return allocations
 
-def run_allocation(semester="Fall 2025"):
-    """
-    Main allocation runner
-    Implements the full 3-tier algorithm with gender and batch segregation
-    """
+def run_allocation(semester=""):
     allocated_count = 0
     
     with transaction.atomic():
@@ -331,8 +279,7 @@ def run_allocation(semester="Fall 2025"):
     
     return allocated_count
 
-def get_allocation_preview(semester="Fall 2025"):
-    """Preview what the allocation would look like without committing"""
+def get_allocation_preview(semester=""):
     preview = {
         'male': {'eligible': 0, 'groups': []},
         'female': {'eligible': 0, 'groups': []}
@@ -363,7 +310,6 @@ def get_allocation_preview(semester="Fall 2025"):
     return preview
 
 def calculate_group_compatibility(group):
-    """Calculate average pairwise compatibility for a group"""
     if len(group) < 2:
         return 0
     
