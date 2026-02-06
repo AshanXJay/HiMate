@@ -23,7 +23,7 @@ const TicketForm = () => {
         { value: 'ELECTRICAL', label: '💡 Electrical' },
         { value: 'FURNITURE', label: '🪑 Furniture' },
         { value: 'CLEANING', label: '🧹 Cleaning' },
-        { value: 'AC_FAN', label: '❄️ AC/Fan' },
+        { value: 'AC_FAN', label: '❄️ Fan' },
         { value: 'DOOR_LOCK', label: '🔒 Door/Lock' },
         { value: 'OTHER', label: '📋 Other' }
     ];
