@@ -196,10 +196,3 @@ REACT_APP_API_URL=http://127.0.0.1:8000
 | `STUDENT` | Personal dashboard, requests, profile |
 | `WARDEN` | Full admin access, allocation, approvals |
 
-## 📄 License
-
-This project is developed for Uva Wellassa University.
-
-## 👥 Contributors
-
-- Development team for ICT Department
