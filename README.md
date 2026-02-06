@@ -41,7 +41,7 @@ HiMate implements a **Three-Tier Matching System**:
 ### Backend
 - **Django 5.2** - Web framework
 - **Django REST Framework** - API development
-- **PostgreSQL/SQLite** - Database
+- **MySQL** - Database
 - **Simple JWT** - Authentication
 - **Google OAuth** - Social login
 
