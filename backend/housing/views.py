@@ -35,29 +35,38 @@ class HostelViewSet(viewsets.ModelViewSet):
     def generate_rooms(self, request, pk=None):
         """Generate rooms and beds for a hostel"""
         hostel = self.get_object()
-        num_rooms = int(request.data.get('num_rooms', 10))
-        beds_per_room = int(request.data.get('beds_per_room', 4))
-        start_floor = int(request.data.get('start_floor', 1))
+        if isinstance(request.data, list):
+            floor_configs = request.data
+        else:
+            # Backward compatibility or unexpected format
+            return Response({'error': 'Expected a list of floor configurations'}, status=status.HTTP_400_BAD_REQUEST)
         
         created_rooms = []
-        for i in range(num_rooms):
-            floor = start_floor + (i // 10)  # 10 rooms per floor
-            room_number = f"{floor}{str((i % 10) + 1).zfill(2)}"  # e.g., 101, 102, etc.
+        
+        for config in floor_configs:
+            floor = int(config.get('floor_number'))
+            room_count = int(config.get('room_count', 0))
+            beds_per_room = int(config.get('beds_per_room', 0))
             
-            room, created = Room.objects.get_or_create(
-                hostel=hostel,
-                room_number=room_number,
-                defaults={'capacity': beds_per_room, 'floor': floor}
-            )
-            
-            if created:
-                # Create beds for the room
-                for j in range(beds_per_room):
-                    Bed.objects.create(
-                        room=room,
-                        bed_number=chr(65 + j)  # A, B, C, D, etc.
-                    )
-                created_rooms.append(room_number)
+            for i in range(room_count):
+                # Generate room number: Floor + 2 digits (e.g., 101, 205)
+                # Ensure 101, not 100 for the first room
+                room_number = f"{floor}{str(i + 1).zfill(2)}"
+                
+                room, created = Room.objects.get_or_create(
+                    hostel=hostel,
+                    room_number=room_number,
+                    defaults={'capacity': beds_per_room, 'floor': floor}
+                )
+                
+                if created:
+                    # Create beds for the room
+                    for j in range(beds_per_room):
+                        Bed.objects.create(
+                            room=room,
+                            bed_number=chr(65 + j)  # A, B, C, D, etc.
+                        )
+                    created_rooms.append(room_number)
         
         return Response({
             'message': f'Created {len(created_rooms)} rooms',

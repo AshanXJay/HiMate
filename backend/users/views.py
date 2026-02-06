@@ -76,7 +76,7 @@ class GoogleLoginView(views.APIView):
             try:
                 # Attempt real verification (will fail if token is not a valid Google JWT)
                 idinfo = id_token.verify_oauth2_token(token, requests.Request(), clock_skew_in_seconds=10)
-                email = idinfo['email']
+                email = idinfo['email'].lower()
                 name = idinfo.get('name', '')
                 first_name = idinfo.get('given_name', name.split()[0] if name else '')
                 last_name = idinfo.get('family_name', name.split()[-1] if name and len(name.split()) > 1 else '')
